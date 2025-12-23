@@ -12,7 +12,7 @@ export default function LandingPage(): JSX.Element {
           title="Physical AI & Humanoid Robotics"
           subtitle="A comprehensive textbook for robotics students and developers"
           ctaText="Start Learning"
-          ctaLink="/books/docs/intro"
+          ctaLink="/docs/intro"
           imageUrl="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&auto=format&fit=crop&q=80"
           imageAlt="Humanoid robot with advanced AI capabilities"
         />

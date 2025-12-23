@@ -8,10 +8,10 @@ const config = {
   favicon: 'img/favicon.svg',
 
   // Set the production url of your site here
-  url: 'https://your-username.github.io',
+  url: 'https://physical-ai-robotics-textbook-xi.vercel.app',
   // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/books/',
+  // For Vercel deployment, use root path
+  baseUrl: '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -72,7 +72,7 @@ const config = {
         logo: {
           alt: 'Textbook Logo',
           src: 'img/logo.svg',
-          href: '/books/docs/intro',
+          href: '/docs/intro',
         },
         items: [
           {
@@ -98,11 +98,11 @@ const config = {
             items: [
               {
                 label: 'Introduction',
-                to: '/books/docs/intro',
+                to: '/docs/intro',
               },
               {
                 label: 'Module 1: ROS 2',
-                to: '/books/docs/module-1-ros2/ch1-ros2-basics',
+                to: '/docs/module-1-ros2/ch1-ros2-basics',
               },
             ],
           },

@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "physical-ai-robotics-textbook",
   "builds": [
     {
       "src": "package.json",
@@ -11,10 +10,6 @@
     }
   ],
   "routes": [
-    {
-      "src": "/books/(.*)",
-      "dest": "/$1"
-    },
     {
       "handle": "filesystem"
     }
