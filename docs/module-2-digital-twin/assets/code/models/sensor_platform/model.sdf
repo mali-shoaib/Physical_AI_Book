@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!--
+  Sensor Platform Model
+
+  Educational model for Module 2: Digital Twin (Gazebo & Unity)
+  Platform for mounting virtual sensors (LiDAR, depth camera, IMU)
+
+  Attribution: Physical AI & Humanoid Robotics Textbook
+  License: MIT
+  Gazebo Version: Fortress (6.x.x)
+-->
+<sdf version="1.8">
+  <model name="sensor_platform">
+    <static>true</static>
+
+    <!-- Base Platform Link -->
+    <link name="base">
+      <pose>0 0 0.5 0 0 0</pose>
+
+      <inertial>
+        <mass>1.0</mass>
+        <inertia>
+          <ixx>0.01</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.01</iyy>
+          <iyz>0</iyz>
+          <izz>0.01</izz>
+        </inertia>
+      </inertial>
+
+      <collision name="base_collision">
+        <geometry>
+          <box>
+            <size>0.2 0.2 0.1</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name="base_visual">
+        <geometry>
+          <box>
+            <size>0.2 0.2 0.1</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.8 0.8 0.2 1.0</ambient>
+          <diffuse>0.8 0.8 0.2 1.0</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Sensor Mount Frame (for attaching sensors) -->
+    <link name="sensor_mount">
+      <pose>0 0 0.6 0 0 0</pose>
+
+      <inertial>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.001</iyy>
+          <iyz>0</iyz>
+          <izz>0.001</izz>
+        </inertia>
+      </inertial>
+
+      <collision name="mount_collision">
+        <geometry>
+          <cylinder>
+            <radius>0.03</radius>
+            <length>0.1</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <visual name="mount_visual">
+        <geometry>
+          <cylinder>
+            <radius>0.03</radius>
+            <length>0.1</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.3 0.3 0.3 1.0</ambient>
+          <diffuse>0.3 0.3 0.3 1.0</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Fixed Joint connecting base to sensor mount -->
+    <joint name="mount_joint" type="fixed">
+      <parent>base</parent>
+      <child>sensor_mount</child>
+    </joint>
+
+  </model>
+</sdf>

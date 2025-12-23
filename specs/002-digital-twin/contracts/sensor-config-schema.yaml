@@ -1,0 +1,187 @@
+# YAML Schema for Virtual Sensor Configurations
+# Purpose: Define standard structure for sensor plugin configs in Module 2
+# Platforms: Gazebo (SDF embedded) and Unity (C# configuration)
+
+---
+# LIDAR SENSOR CONFIGURATION
+
+sensor_name: string           # Required: Unique identifier (e.g., "front_lidar")
+sensor_type: "lidar"          # Required: Fixed value for LiDAR sensors
+platform: string              # Required: "gazebo" or "unity"
+
+gazebo_config:                # Required if platform = "gazebo"
+  plugin_filename: string     # "libgazebo_ros_ray_sensor.so" (Gazebo Classic) or gz sensor plugin
+  ros_namespace: string       # E.g., "/robot"
+  topic_name: string          # E.g., "scan" (will be remapped to /robot/scan)
+  frame_name: string          # TF frame for sensor data (e.g., "lidar_link")
+  output_type: string         # "sensor_msgs/LaserScan" or "sensor_msgs/PointCloud2"
+
+  ray_config:
+    horizontal_samples: integer   # Number of beams per scan (e.g., 360)
+    horizontal_resolution: float  # Angular resolution in degrees (e.g., 1.0)
+    horizontal_min_angle: float   # Start angle in radians (e.g., -3.14159)
+    horizontal_max_angle: float   # End angle in radians (e.g., 3.14159)
+
+    vertical_samples: integer     # For 3D LiDAR (1 for 2D)
+    vertical_resolution: float    # Vertical angular resolution
+    vertical_min_angle: float     # Vertical start angle
+    vertical_max_angle: float     # Vertical end angle
+
+    range_min: float              # Minimum detection range (meters, e.g., 0.12)
+    range_max: float              # Maximum detection range (meters, e.g., 10.0)
+    range_resolution: float       # Range measurement resolution (e.g., 0.01)
+
+  noise_model:
+    type: string                  # "gaussian", "uniform", or "none"
+    mean: float                   # Noise mean (e.g., 0.0)
+    std_dev: float                # Standard deviation (e.g., 0.03 for 3cm error)
+
+  update_rate: float              # Sensor frequency in Hz (e.g., 10.0)
+
+unity_config:                 # Required if platform = "unity"
+  game_object_name: string    # Unity GameObject with sensor component
+  perception_camera: boolean  # Use Unity Perception package (false for basic LiDAR)
+  ray_cast_layers: string[]   # Unity layers to detect (e.g., ["Default", "Obstacles"])
+
+---
+# DEPTH CAMERA SENSOR CONFIGURATION
+
+sensor_name: string
+sensor_type: "depth_camera"
+platform: string
+
+gazebo_config:
+  plugin_filename: string     # "libgazebo_ros_camera.so"
+  ros_namespace: string
+  image_topic: string         # E.g., "camera/depth/image_raw"
+  camera_info_topic: string   # E.g., "camera/depth/camera_info"
+  point_cloud_topic: string   # Optional: "camera/depth/points"
+  frame_name: string
+
+  camera_config:
+    horizontal_fov: float     # Field of view in radians (e.g., 1.047 for 60°)
+    image_width: integer      # Pixels (e.g., 640)
+    image_height: integer     # Pixels (e.g., 480)
+    image_format: string      # "R8G8B8", "L8" (grayscale), "R_FLOAT32" (depth)
+
+    clip_near: float          # Near clipping plane (meters, e.g., 0.1)
+    clip_far: float           # Far clipping plane (meters, e.g., 10.0)
+
+  noise_model:
+    type: string              # "gaussian"
+    mean: float               # 0.0
+    std_dev: float            # Depth noise (e.g., 0.007 for RealSense accuracy)
+
+  update_rate: float          # FPS (e.g., 30.0)
+
+unity_config:
+  game_object_name: string
+  perception_camera: boolean  # true for Unity Perception package
+  capture_depth: boolean
+  capture_rgb: boolean
+  capture_segmentation: boolean
+  resolution: integer[2]      # [width, height] e.g., [640, 480]
+
+---
+# IMU SENSOR CONFIGURATION
+
+sensor_name: string
+sensor_type: "imu"
+platform: string
+
+gazebo_config:
+  plugin_filename: string     # "libgazebo_ros_imu_sensor.so"
+  ros_namespace: string
+  topic_name: string          # E.g., "imu/data"
+  frame_name: string
+  initial_orientation_as_reference: boolean  # true or false
+
+  angular_velocity_noise:
+    x_axis:
+      type: string            # "gaussian"
+      mean: float             # 0.0
+      std_dev: float          # rad/s (e.g., 0.009)
+      bias_mean: float        # Constant offset
+      bias_std_dev: float     # Bias drift rate
+    y_axis:
+      # Same structure as x_axis
+    z_axis:
+      # Same structure as x_axis
+
+  linear_acceleration_noise:
+    x_axis:
+      type: string
+      mean: float
+      std_dev: float          # m/s² (e.g., 0.017)
+      bias_mean: float
+      bias_std_dev: float
+    y_axis:
+      # Same structure
+    z_axis:
+      # Same structure
+
+  update_rate: float          # Hz (e.g., 100.0)
+
+unity_config:
+  game_object_name: string
+  read_from_rigidbody: boolean  # Use Unity Rigidbody physics for IMU data
+
+---
+# EXAMPLE: LiDAR Sensor Configuration
+
+sensor_name: front_lidar
+sensor_type: lidar
+platform: gazebo
+
+gazebo_config:
+  plugin_filename: libgazebo_ros_ray_sensor.so
+  ros_namespace: /robot
+  topic_name: scan
+  frame_name: lidar_link
+  output_type: sensor_msgs/LaserScan
+
+  ray_config:
+    horizontal_samples: 360
+    horizontal_resolution: 1.0
+    horizontal_min_angle: -3.14159
+    horizontal_max_angle: 3.14159
+    vertical_samples: 1
+    vertical_resolution: 1.0
+    vertical_min_angle: 0.0
+    vertical_max_angle: 0.0
+    range_min: 0.12
+    range_max: 10.0
+    range_resolution: 0.01
+
+  noise_model:
+    type: gaussian
+    mean: 0.0
+    std_dev: 0.03  # 3cm range error
+
+  update_rate: 10.0
+
+---
+# EXAMPLE: Depth Camera Configuration
+
+sensor_name: head_depth_camera
+sensor_type: depth_camera
+platform: unity
+
+unity_config:
+  game_object_name: RobotHead/DepthCamera
+  perception_camera: true
+  capture_depth: true
+  capture_rgb: true
+  capture_segmentation: true
+  resolution: [640, 480]
+
+---
+# VALIDATION RULES:
+# - sensor_name must be unique within robot model
+# - frame_name must exist in robot URDF
+# - update_rate must be <= simulation update rate
+# - range_max must be > range_min
+# - image dimensions must be positive integers
+# - Noise std_dev must be >= 0
+# - All ROS topic names must start with / or use relative naming
+# - Unity GameObject must exist in scene hierarchy

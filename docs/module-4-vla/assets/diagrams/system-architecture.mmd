@@ -1,0 +1,36 @@
+```mermaid
+graph TB
+    subgraph "User Interface"
+        A[Microphone] -->|Raw Audio| B[Whisper ASR]
+    end
+
+    subgraph "Cognitive Layer"
+        B -->|Transcribed Text| C[LLM Planner]
+        C -->|Action Plan JSON| D[Action Validator]
+        D -->|Validated Plan| E[Task Scheduler]
+    end
+
+    subgraph "Execution Layer"
+        E -->|Actions| F[ROS 2 Action Clients]
+        F -->|nav goals| G[Nav2 Navigation]
+        F -->|grasp goals| H[Manipulation Controller]
+        F -->|detect goals| I[Perception Pipeline]
+    end
+
+    subgraph "Physical Robot"
+        G -->|motor commands| J[Humanoid Robot Isaac Sim]
+        H -->|gripper commands| J
+        I -->|camera data| J
+    end
+
+    subgraph "Monitoring & Feedback"
+        J -->|status| K[Task Monitor]
+        K -->|feedback| C
+        K -->|logs| L[Performance Metrics]
+    end
+
+    style A fill:#87CEEB
+    style C fill:#FFB6C1
+    style F fill:#90EE90
+    style J fill:#DDA0DD
+```

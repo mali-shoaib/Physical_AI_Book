@@ -1,0 +1,13 @@
+# Python dependencies for validation scripts
+# These are minimal dependencies for linting and validation only
+# ROS 2 dependencies are not included (expected to be in separate environment)
+
+# Markdown linting (optional, for npm script)
+# Install with: npm install -g markdownlint-cli
+
+# Python validation - all scripts use only standard library
+# No additional packages required for basic validation
+
+# Optional: Enhanced validation tools
+# pyyaml>=6.0  # For YAML frontmatter validation (future enhancement)
+# jsonschema>=4.0  # For schema validation (future enhancement)

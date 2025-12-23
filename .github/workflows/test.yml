@@ -1,0 +1,76 @@
+name: Test Code Examples
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main]
+  schedule:
+    # Run weekly on Mondays at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+
+jobs:
+  test-python:
+    name: Test Python Examples
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f scripts/requirements.txt ]; then pip install -r scripts/requirements.txt; fi
+
+      - name: Run executable tests
+        run: |
+          python scripts/test_code_examples.py -v
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-python
+          path: |
+            test-*.log
+
+  test-ros2:
+    name: Test ROS 2 Examples
+    runs-on: ubuntu-22.04
+
+    container:
+      image: osrf/ros:humble-desktop
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up ROS 2 environment
+        run: |
+          . /opt/ros/humble/setup.sh
+          echo "ROS_DISTRO=$ROS_DISTRO" >> $GITHUB_ENV
+
+      - name: Install test dependencies
+        run: |
+          apt-get update
+          apt-get install -y python3-pip
+          pip3 install --upgrade pip
+
+      - name: Run ROS 2 code validation
+        run: |
+          . /opt/ros/humble/setup.sh
+          python3 scripts/validate_examples.py -v
+
+      - name: Upload ROS 2 test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-ros2
+          path: |
+            ros2-test-*.log

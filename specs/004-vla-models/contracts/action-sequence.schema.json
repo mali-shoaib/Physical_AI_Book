@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://physical-ai-textbook.org/schemas/action-sequence.schema.json",
+  "title": "ROS 2 Action",
+  "description": "Executable robot behavior triggered by LLM plan, maps to ROS 2 action server calls",
+  "type": "object",
+  "required": [
+    "action_id",
+    "plan_id",
+    "action_type",
+    "goal_parameters",
+    "status",
+    "start_timestamp",
+    "retry_attempt"
+  ],
+  "properties": {
+    "action_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this action instance (UUID v4)"
+    },
+    "plan_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Reference to parent LLM Plan UUID"
+    },
+    "action_type": {
+      "type": "string",
+      "description": "ROS 2 action name (must match action interface)",
+      "examples": ["navigate_to_pose", "grasp_object", "detect_object", "follow_path"]
+    },
+    "goal_parameters": {
+      "type": "object",
+      "description": "Goal message for ROS 2 action (schema varies by action type)",
+      "additionalProperties": true
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PENDING", "IN_PROGRESS", "SUCCEEDED", "FAILED", "CANCELLED"],
+      "description": "Current execution status"
+    },
+    "result": {
+      "type": "object",
+      "description": "Result message from action server (populated when SUCCEEDED or FAILED)",
+      "additionalProperties": true
+    },
+    "feedback": {
+      "type": "array",
+      "description": "Periodic updates during execution",
+      "items": {
+        "type": "object",
+        "required": ["timestamp", "message"],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When feedback was received (ISO 8601 UTC)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Feedback content"
+          },
+          "progress_percentage": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 100.0,
+            "description": "Completion percentage"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "start_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When action execution began (ISO 8601 UTC)"
+    },
+    "end_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When action completed or failed (ISO 8601 UTC)"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0.0,
+      "description": "Actual execution time (calculated from timestamps)"
+    },
+    "error_message": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Description of failure if status=FAILED"
+    },
+    "retry_attempt": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Which retry this is (0 = first attempt)"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,14 @@
+```mermaid
+graph LR
+    A[Voice Input] -->|Whisper ASR| B[Text Command]
+    B -->|LLM Processing| C[Action Plan]
+    C -->|ROS 2 Execution| D[Robot Actions]
+    D -->|Feedback| E[Task Status]
+    E -.->|If failure| B
+
+    style A fill:#87CEEB
+    style B fill:#FFE4B5
+    style C fill:#FFB6C1
+    style D fill:#90EE90
+    style E fill:#DDA0DD
+```

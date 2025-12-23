@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://physical-ai-textbook.org/schemas/voice-command.schema.json",
+  "title": "Voice Command",
+  "description": "Spoken natural language input from user, captured and transcribed by Whisper ASR",
+  "type": "object",
+  "required": [
+    "command_id",
+    "transcribed_text",
+    "language_code",
+    "confidence_score",
+    "timestamp",
+    "audio_duration_seconds",
+    "whisper_model_used"
+  ],
+  "properties": {
+    "command_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this voice command (UUID v4)"
+    },
+    "transcribed_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Text output from Whisper speech recognition"
+    },
+    "language_code": {
+      "type": "string",
+      "pattern": "^[a-z]{2}$",
+      "description": "ISO 639-1 two-letter language code",
+      "examples": ["en", "es", "fr", "de", "zh"]
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Whisper's confidence in transcription accuracy"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When command was recorded (ISO 8601 UTC format)"
+    },
+    "audio_duration_seconds": {
+      "type": "number",
+      "exclusiveMinimum": 0.0,
+      "maximum": 60.0,
+      "description": "Length of audio clip in seconds"
+    },
+    "whisper_model_used": {
+      "type": "string",
+      "enum": ["tiny", "base", "small", "medium", "large"],
+      "description": "Which Whisper model size was used for transcription"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,60 @@
+# YAML Schema for Module 2 Chapter Frontmatter
+# Purpose: Define required metadata for each chapter markdown file
+# Location: docs/module-2-digital-twin/ch{N}-*.md
+
+---
+id: string                    # Required: kebab-case identifier (e.g., "ch1-gazebo-physics")
+title: string                 # Required: Display title (e.g., "Chapter 1: Physics Simulation in Gazebo")
+sidebar_label: string         # Required: Short sidebar text (e.g., "Ch1: Gazebo Physics")
+sidebar_position: integer     # Required: Order in sidebar (1, 2, 3...)
+description: string           # Required: One-sentence summary for SEO and preview
+keywords:                     # Required: List of searchable terms
+  - string
+  - string
+custom_edit_url: string       # Optional: GitHub edit link
+learning_objectives:          # Required: List of specific learning goals
+  - string
+  - string
+prerequisites:                # Required: List of prior knowledge requirements
+  - string
+  - string
+estimated_time: integer       # Required: Minutes to complete chapter
+difficulty_level: string      # Required: One of "beginner", "intermediate", "advanced"
+---
+
+# Example Frontmatter for Chapter 1:
+
+---
+id: ch1-gazebo-physics
+title: "Chapter 1: Physics Simulation in Gazebo"
+sidebar_label: "Ch1: Gazebo Physics"
+sidebar_position: 1
+description: "Master physics-based simulation in Gazebo including gravity, collisions, and world configuration"
+keywords:
+  - gazebo
+  - physics simulation
+  - SDF
+  - gravity
+  - collision detection
+  - digital twin
+custom_edit_url: https://github.com/your-org/books/tree/main/docs/module-2-digital-twin/ch1-gazebo-physics.md
+learning_objectives:
+  - "Configure gravity and physics parameters in SDF world files"
+  - "Understand solver iterations and timestep tradeoffs for simulation stability"
+  - "Create custom Gazebo worlds with multiple models and plugins"
+  - "Debug common Gazebo errors using verbose logging and validation tools"
+prerequisites:
+  - "Module 1: ROS 2 Basics (nodes, topics, launch files)"
+  - "Understanding of URDF format and robot modeling"
+  - "Basic Linux terminal navigation and file editing"
+estimated_time: 90
+difficulty_level: intermediate
+---
+
+# Validation Rules:
+# - id must match filename (without .md extension)
+# - title should include "Chapter N:" prefix for consistency
+# - sidebar_position must be unique within module
+# - learning_objectives: minimum 3, maximum 6
+# - prerequisites: reference previous chapters or Module 1
+# - estimated_time: realistic for hands-on completion (60-120 min typical)

@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/module-3-isaac-chapter-schema.json",
+  "title": "Module 3 Chapter Schema",
+  "description": "Validation schema for Module 3: The AI-Robot Brain (NVIDIA Isaac) chapter frontmatter",
+  "type": "object",
+  "required": [
+    "title",
+    "description",
+    "sidebar_position"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Chapter title",
+      "minLength": 5,
+      "maxLength": 100,
+      "examples": [
+        "Ch1: Isaac Sim Basics",
+        "Ch3: VSLAM with Isaac ROS"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief chapter description (2-3 sentences)",
+      "minLength": 50,
+      "maxLength": 500,
+      "examples": [
+        "Learn the fundamentals of NVIDIA Isaac Sim, including installation, UI navigation, robot model loading, and synthetic sensor data generation. Students will set up Isaac Sim, load humanoid robots, and run basic simulations."
+      ]
+    },
+    "sidebar_position": {
+      "type": "integer",
+      "description": "Position in the sidebar navigation",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "learning_objectives": {
+      "type": "array",
+      "description": "List of specific learning objectives (3-7 items)",
+      "minItems": 3,
+      "maxItems": 7,
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 200
+      },
+      "examples": [
+        [
+          "Install and configure NVIDIA Isaac Sim 2024.1+ on Ubuntu 22.04",
+          "Navigate the Isaac Sim UI and load USD humanoid robot models",
+          "Configure ROS 2 bridge for Isaac Sim and publish sensor data",
+          "Generate and export synthetic RGB and depth image datasets"
+        ]
+      ]
+    },
+    "prerequisites": {
+      "type": "array",
+      "description": "List of prerequisite knowledge or modules",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 5
+      },
+      "examples": [
+        [
+          "Module 1: ROS 2 Basics (Ch1-3)",
+          "Module 2: Digital Twin (Ch1-3)",
+          "Basic Python programming (functions, classes)",
+          "Ubuntu 22.04 command-line familiarity"
+        ]
+      ]
+    },
+    "estimated_time": {
+      "type": "string",
+      "description": "Estimated time to complete chapter (e.g., '2-3 hours', '45 minutes')",
+      "pattern": "^\\d+-?\\d*\\s+(minutes?|hours?)$",
+      "examples": [
+        "2-3 hours",
+        "45 minutes",
+        "1 hour"
+      ]
+    },
+    "difficulty": {
+      "type": "string",
+      "description": "Chapter difficulty level",
+      "enum": [
+        "Beginner",
+        "Intermediate",
+        "Advanced"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "description": "Searchable tags for the chapter",
+      "items": {
+        "type": "string",
+        "enum": [
+          "isaac-sim",
+          "isaac-ros",
+          "nav2",
+          "vslam",
+          "depth-perception",
+          "synthetic-data",
+          "ros2-bridge",
+          "usd-models",
+          "sensor-simulation",
+          "navigation",
+          "perception",
+          "localization",
+          "mapping"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "hardware_requirements": {
+      "type": "object",
+      "description": "Hardware requirements for running chapter examples",
+      "properties": {
+        "gpu": {
+          "type": "string",
+          "description": "GPU requirement",
+          "examples": [
+            "NVIDIA RTX 3060 or better (8GB+ VRAM)",
+            "NVIDIA GPU with Compute Capability 7.0+"
+          ]
+        },
+        "ram": {
+          "type": "string",
+          "description": "RAM requirement",
+          "examples": [
+            "16GB minimum, 32GB recommended"
+          ]
+        },
+        "storage": {
+          "type": "string",
+          "description": "Storage requirement",
+          "examples": [
+            "20GB free disk space"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "roi_id": "roi-ai-writing-feedback-001",
+  "application_id": "ai-writing-feedback",
+  "school_context": "Medium urban elementary school (500 students, 25 teachers)",
+  "costs": {
+    "software_licensing": {
+      "cost_low": 2000,
+      "cost_high": 3500,
+      "cost_type": "Recurring Annual",
+      "pricing_model": "Per-Student",
+      "assumptions": "Based on writing tool pricing of $4-$7 per student annually (500 students). Pricing from Grammarly EDU ($5/student), NoRedInk ($6/student), Turnitin Revision Assistant ($7/student). Some tools like Quill.org offer free tiers.",
+      "data_source": "Vendor pricing sheets (Grammarly for Education, NoRedInk, Turnitin, Quill.org) as of 2024"
+    },
+    "implementation": {
+      "cost_low": 1000,
+      "cost_high": 2000,
+      "cost_type": "One-Time",
+      "assumptions": "Lower implementation complexity than ITS. IT setup (15-25 hours at $50/hr), account setup, LMS integration. Most tools integrate easily with Google Classroom or Microsoft Teams.",
+      "data_source": "Industry estimates from EdTech implementation studies; vendor implementation guides"
+    },
+    "training": {
+      "cost_low": 1500,
+      "cost_high": 2500,
+      "cost_type": "One-Time",
+      "assumptions": "Moderate training requirements. Initial PD workshop (3-4 hours for 25 teachers) focusing on interpreting AI feedback and integrating into writing instruction. Substitute coverage ($2,500) + vendor training (often free, or $500-1,000).",
+      "data_source": "Average substitute teacher rates; vendor training offerings"
+    },
+    "training": {
+      "cost_low": 1500,
+      "cost_high": 2500,
+      "cost_type": "One-Time",
+      "assumptions": "Moderate training requirements. Initial PD workshop (3-4 hours for 25 teachers) focusing on interpreting AI feedback and integrating into writing instruction. Substitute coverage ($2,500) + vendor training (often free, or $500-1,000).",
+      "data_source": "Average substitute teacher rates; vendor training offerings"
+    },
+    "maintenance": {
+      "cost_low": 400,
+      "cost_high": 800,
+      "cost_type": "Recurring Annual",
+      "assumptions": "Minimal ongoing maintenance. IT support (8-12 hours/year at $50/hr), system updates. Most maintenance included in SaaS subscription. Lower complexity than ITS.",
+      "data_source": "IT department budgeting estimates for writing tools"
+    },
+    "total_year1": 7400,
+    "total_annual_recurring": 3100
+  },
+  "benefits": {
+    "teacher_time_savings": {
+      "hours_saved_per_teacher_per_week": 5.4,
+      "number_of_teachers": 25,
+      "weeks_per_year": 36,
+      "total_hours_saved_annually": 4860
+    },
+    "teacher_hourly_rate_assumption": 40,
+    "annual_benefits_quantified": 194400,
+    "additional_benefits_notes": "Student outcomes: 24-31% increase in writing engagement (measured by revision frequency). Writing quality improvements: effect size d=0.38, 12-18% improvement in essay scores, 35% more revision drafts, 22% reduction in grammatical errors. AI feedback allows hybrid model where teachers focus on higher-order concerns (content, organization, argumentation) while AI handles grammar and mechanics. Particularly beneficial for struggling writers and ELLs (effect size 40% larger). Equity benefit: Immediate feedback for all students, closing feedback gap in under-resourced schools."
+  },
+  "roi_percentage": 2527,
+  "break_even_months": 0.46,
+  "payback_period_description": "Payback in less than half a month (0.46 months, or ~2 weeks). Year 1 ROI of 2,527% ($194,400 benefits vs $7,400 total costs). Ongoing annual ROI of 6,171% ($194,400 benefits vs $3,100 recurring costs).",
+  "assumptions_and_caveats": "ROI calculation uses teacher hourly rate of $40. Benefits assume 48% reduction in writing feedback delivery time across 25 teachers (baseline 11.2 hrs/week). Writing feedback is one of the most time-intensive teacher tasks, explaining the high ROI. Success depends on teachers maintaining focus on higher-order feedback while AI handles mechanics. Does not quantify student engagement and writing quality improvements in monetary terms. Time savings assume teachers use AI for formative feedback on drafts; summative assessment feedback may still require full teacher attention. Effectiveness varies by writing genre and student grade level."
+}

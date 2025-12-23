@@ -1,0 +1,138 @@
+/**
+ * Hero Section Styles
+ * - Centered layout with responsive typography
+ * - Green theme background (#F9FFF9)
+ * - Mobile-first responsive design (breakpoints added in User Story 3)
+ */
+
+.hero {
+  background-color: var(--hero-bg-color);
+  padding: var(--hero-padding-desktop);
+  text-align: center;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.heroText {
+  text-align: left;
+}
+
+.heroImage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.heroImage img {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(45, 122, 79, 0.15);
+}
+
+.title {
+  color: var(--ifm-color-primary);
+  font-size: 3rem; /* 48px */
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.subtitle {
+  color: var(--ifm-color-gray-700);
+  font-size: 1.75rem; /* 28px */
+  font-weight: 400;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  margin-top: 0;
+}
+
+/* Tablet breakpoint (768px - 1023px) */
+@media (max-width: 1023px) {
+  .hero {
+    padding: 3.5rem 1.75rem;
+    min-height: 350px;
+  }
+
+  .heroContent {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .heroText {
+    text-align: center;
+  }
+
+  .title {
+    font-size: 2.5rem; /* 40px */
+  }
+
+  .subtitle {
+    font-size: 1.5rem; /* 24px */
+  }
+
+  .heroImage img {
+    max-width: 400px;
+  }
+}
+
+/* Mobile breakpoint (320px - 767px) */
+@media (max-width: 767px) {
+  .hero {
+    padding: var(--hero-padding-mobile);
+    min-height: 300px;
+  }
+
+  .heroContent {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .heroText {
+    text-align: center;
+  }
+
+  .title {
+    font-size: 2rem; /* 32px */
+  }
+
+  .subtitle {
+    font-size: 1.25rem; /* 20px */
+  }
+
+  .heroImage img {
+    max-width: 300px;
+  }
+}
+
+/* Very small mobile devices (320px - 480px) */
+@media (max-width: 480px) {
+  .hero {
+    padding: 2rem 1rem;
+  }
+
+  .title {
+    font-size: 1.75rem; /* 28px */
+  }
+
+  .subtitle {
+    font-size: 1.125rem; /* 18px */
+  }
+
+  .heroImage img {
+    max-width: 250px;
+  }
+}

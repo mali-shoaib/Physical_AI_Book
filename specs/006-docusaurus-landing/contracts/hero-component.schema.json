@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://textbook.example.com/schemas/hero-component.json",
+  "title": "Hero Component Props Schema",
+  "description": "TypeScript interface validation for the Hero component in the Docusaurus landing page",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Main heading text displayed at 48px on desktop, 32px on mobile",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": [
+        "Learn. Grow. Excel.",
+        "Open Education for Everyone"
+      ]
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Subheading text displayed at 28px on desktop, 20px on mobile",
+      "minLength": 1,
+      "maxLength": 200,
+      "examples": [
+        "Open-source textbooks designed for the modern learner",
+        "High-quality educational materials, freely accessible to all"
+      ]
+    },
+    "ctaText": {
+      "type": "string",
+      "description": "Text displayed on the call-to-action button",
+      "minLength": 1,
+      "maxLength": 30,
+      "examples": [
+        "Start Learning",
+        "Get Started",
+        "Explore Textbooks"
+      ]
+    },
+    "ctaLink": {
+      "type": "string",
+      "description": "Internal route or external URL for the CTA button (preferably internal Docusaurus route)",
+      "format": "uri-reference",
+      "pattern": "^(/|https?://)",
+      "examples": [
+        "/docs/intro",
+        "/docs/getting-started",
+        "https://github.com/org/repo"
+      ]
+    }
+  },
+  "required": [
+    "title",
+    "subtitle",
+    "ctaText",
+    "ctaLink"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "title": "Learn. Grow. Excel.",
+      "subtitle": "Open-source textbooks designed for the modern learner",
+      "ctaText": "Start Learning",
+      "ctaLink": "/docs/intro"
+    }
+  ]
+}

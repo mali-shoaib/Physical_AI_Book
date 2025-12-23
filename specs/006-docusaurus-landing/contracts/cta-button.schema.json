@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://textbook.example.com/schemas/cta-button.json",
+  "title": "CTA Button Component Props Schema",
+  "description": "TypeScript interface validation for the CTAButton component",
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string",
+      "description": "Button text displayed to the user",
+      "minLength": 1,
+      "maxLength": 30,
+      "examples": [
+        "Start Learning",
+        "Get Started",
+        "View Documentation"
+      ]
+    },
+    "href": {
+      "type": "string",
+      "description": "Link destination (internal Docusaurus route or external URL)",
+      "format": "uri-reference",
+      "pattern": "^(/|https?://)",
+      "examples": [
+        "/docs/intro",
+        "/docs/getting-started",
+        "https://github.com/organization/repository"
+      ]
+    },
+    "variant": {
+      "type": "string",
+      "description": "Visual style variant for the button",
+      "enum": [
+        "primary",
+        "secondary"
+      ],
+      "default": "primary",
+      "examples": [
+        "primary",
+        "secondary"
+      ]
+    }
+  },
+  "required": [
+    "text",
+    "href"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "text": "Start Learning",
+      "href": "/docs/intro",
+      "variant": "primary"
+    },
+    {
+      "text": "View on GitHub",
+      "href": "https://github.com/org/repo",
+      "variant": "secondary"
+    }
+  ]
+}

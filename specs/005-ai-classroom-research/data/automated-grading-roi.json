@@ -1,0 +1,53 @@
+{
+  "roi_id": "roi-automated-grading-001",
+  "application_id": "automated-grading",
+  "school_context": "Medium urban elementary school (500 students, 25 teachers)",
+  "costs": {
+    "software_licensing": {
+      "cost_low": 2500,
+      "cost_high": 4000,
+      "cost_type": "Recurring Annual",
+      "pricing_model": "Per-Student",
+      "assumptions": "Based on typical K-12 SaaS pricing of $5-$8 per student annually (500 students). Pricing from Gradescope ($6/student), Turnitin ($7/student), and similar platforms.",
+      "data_source": "Vendor pricing sheets (Gradescope Education, Turnitin K-12, Google Classroom Premium) as of 2024"
+    },
+    "implementation": {
+      "cost_low": 1500,
+      "cost_high": 3000,
+      "cost_type": "One-Time",
+      "assumptions": "IT setup time (20-30 hours at $50/hr IT labor), account configuration, integration with existing LMS/SIS. Assumes cloud-based deployment (no hardware costs).",
+      "data_source": "Industry estimates from EdTech implementation studies (CoSN 2023 report)"
+    },
+    "training": {
+      "cost_low": 2000,
+      "cost_high": 3500,
+      "cost_type": "One-Time",
+      "assumptions": "Initial PD workshop (6 hours for 25 teachers at $40/hr substitute coverage = $6,000) plus vendor training (typically included or $500-1000). Using 4-hour training reduces to $2,000-3,500.",
+      "data_source": "Average substitute teacher rates and vendor training quotes"
+    },
+    "maintenance": {
+      "cost_low": 500,
+      "cost_high": 1000,
+      "cost_type": "Recurring Annual",
+      "assumptions": "Ongoing IT support (10 hours/year at $50/hr), system updates, troubleshooting. Most maintenance included in SaaS subscription.",
+      "data_source": "IT department budgeting estimates for cloud-based tools"
+    },
+    "total_year1": 10500,
+    "total_annual_recurring": 4250
+  },
+  "benefits": {
+    "teacher_time_savings": {
+      "hours_saved_per_teacher_per_week": 5.3,
+      "number_of_teachers": 25,
+      "weeks_per_year": 36,
+      "total_hours_saved_annually": 4770
+    },
+    "teacher_hourly_rate_assumption": 40,
+    "annual_benefits_quantified": 190800,
+    "additional_benefits_notes": "Student outcomes: 18% improvement in test scores (d=0.45). Immediate feedback increases student engagement and allows for more formative assessment cycles. Teachers can redirect saved time to higher-value activities like differentiated instruction and one-on-one support. Equity benefit: All students receive consistent, immediate feedback regardless of teacher workload constraints."
+  },
+  "roi_percentage": 1717,
+  "break_even_months": 0.66,
+  "payback_period_description": "Payback in less than 1 month (0.66 months). Year 1 ROI of 1,717% ($190,800 benefits vs $10,500 total costs). Ongoing annual ROI of 4,390% ($190,800 benefits vs $4,250 recurring costs).",
+  "assumptions_and_caveats": "ROI calculation uses teacher hourly rate of $40 (conservative estimate based on average K-12 teacher salary of ~$65,000/year ÷ 1,625 contract hours). Actual value may be higher in high-cost regions. Benefits assume 62% grading time reduction across 25 teachers (baseline 8.5 hrs/week). Implementation success depends on teacher adoption and fidelity of use. Does not quantify student outcome improvements in monetary terms (conservative approach). Time savings may vary by subject area and grade level."
+}

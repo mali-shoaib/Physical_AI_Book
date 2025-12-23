@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Docusaurus Sidebar Configuration Schema",
+  "description": "JSON Schema for validating Docusaurus sidebar configuration",
+  "type": "object",
+  "properties": {
+    "mainSidebar": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/SidebarItem"
+      }
+    }
+  },
+  "required": ["mainSidebar"],
+  "definitions": {
+    "SidebarItem": {
+      "oneOf": [
+        { "$ref": "#/definitions/DocItem" },
+        { "$ref": "#/definitions/CategoryItem" },
+        { "$ref": "#/definitions/LinkItem" }
+      ]
+    },
+    "DocItem": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "doc"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-/]+$",
+          "description": "Document ID (e.g., 'module-1-ros2/ch1-ros2-basics')"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        }
+      },
+      "required": ["type", "id", "label"],
+      "additionalProperties": false
+    },
+    "CategoryItem": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "category"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "collapsed": {
+          "type": "boolean",
+          "default": true
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SidebarItem"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["type", "label", "items"],
+      "additionalProperties": false
+    },
+    "LinkItem": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "link"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "href": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": ["type", "label", "href"],
+      "additionalProperties": false
+    }
+  }
+}

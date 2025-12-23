@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/module-3-isaac-mermaid-diagram-schema.json",
+  "title": "Module 3 Mermaid Diagram Schema",
+  "description": "Validation schema and style guide for Mermaid diagrams in Module 3",
+  "type": "object",
+  "required": [
+    "diagram_type",
+    "title",
+    "description",
+    "chapter"
+  ],
+  "properties": {
+    "diagram_type": {
+      "type": "string",
+      "description": "Type of Mermaid diagram",
+      "enum": [
+        "flowchart",
+        "sequenceDiagram",
+        "classDiagram",
+        "stateDiagram",
+        "graph"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "description": "Diagram title",
+      "minLength": 5,
+      "maxLength": 100,
+      "examples": [
+        "Isaac Sim to ROS 2 Data Pipeline",
+        "VSLAM Processing Workflow",
+        "Nav2 BT Navigator State Machine"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of the diagram's purpose",
+      "minLength": 20,
+      "maxLength": 300,
+      "examples": [
+        "Illustrates the data flow from Isaac Sim synthetic sensors through the ROS 2 bridge to Isaac ROS VSLAM node, showing topic names and message types."
+      ]
+    },
+    "chapter": {
+      "type": "integer",
+      "description": "Chapter number this diagram belongs to",
+      "minimum": 1,
+      "maximum": 6
+    },
+    "style_guide": {
+      "type": "object",
+      "description": "Style guide rules for Mermaid diagrams",
+      "properties": {
+        "color_scheme": {
+          "type": "string",
+          "description": "Recommended color scheme",
+          "enum": [
+            "default",
+            "dark",
+            "forest",
+            "neutral"
+          ],
+          "default": "default"
+        },
+        "node_shapes": {
+          "type": "object",
+          "description": "Semantic node shape usage",
+          "properties": {
+            "rectangle": {
+              "type": "string",
+              "default": "Process or computation step"
+            },
+            "rounded_rectangle": {
+              "type": "string",
+              "default": "Input/output or data source"
+            },
+            "diamond": {
+              "type": "string",
+              "default": "Decision point or conditional"
+            },
+            "circle": {
+              "type": "string",
+              "default": "Start/end state"
+            },
+            "hexagon": {
+              "type": "string",
+              "default": "External system or hardware"
+            }
+          }
+        },
+        "required_elements": {
+          "type": "array",
+          "description": "Elements that must be present in the diagram",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "Clear start and end points",
+              "Labeled edges with data types or actions",
+              "Consistent node naming (lowercase with underscores)"
+            ]
+          ]
+        }
+      }
+    },
+    "example_usage": {
+      "type": "object",
+      "description": "Example Mermaid diagram code",
+      "properties": {
+        "flowchart_example": {
+          "type": "string",
+          "description": "Example flowchart diagram",
+          "examples": [
+            "```mermaid\nflowchart LR\n    A[Isaac Sim] -->|sensor_msgs/Image| B[ROS 2 Bridge]\n    B -->|/left/image_raw| C[Isaac ROS VSLAM]\n    C -->|nav_msgs/Odometry| D[Nav2 Controller]\n```"
+          ]
+        },
+        "sequence_diagram_example": {
+          "type": "string",
+          "description": "Example sequence diagram",
+          "examples": [
+            "```mermaid\nsequenceDiagram\n    participant Isaac as Isaac Sim\n    participant Bridge as ROS 2 Bridge\n    participant VSLAM as Isaac ROS VSLAM\n    Isaac->>Bridge: Publish RGB image\n    Bridge->>VSLAM: Forward /left/image_raw\n    VSLAM->>VSLAM: Process VSLAM pipeline\n    VSLAM->>Bridge: Publish /visual_slam/tracking/odometry\n```"
+          ]
+        }
+      }
+    },
+    "validation_rules": {
+      "type": "array",
+      "description": "Validation rules for Mermaid diagrams",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "Diagram must be syntactically valid Mermaid code",
+        "All nodes must have unique IDs",
+        "Edge labels should be concise (max 5-7 words)",
+        "Use consistent direction (LR for flowcharts, TD for hierarchies)",
+        "Include node labels that are human-readable (not just IDs)",
+        "Avoid excessive complexity (max 15-20 nodes per diagram)"
+      ]
+    },
+    "common_pitfalls": {
+      "type": "array",
+      "description": "Common mistakes to avoid",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "Using special characters in node IDs (stick to alphanumeric + underscore)",
+        "Creating circular dependencies without clear flow direction",
+        "Overcrowding diagrams (split complex diagrams into multiple smaller ones)",
+        "Missing edge labels (always label edges with data types or actions)",
+        "Inconsistent naming conventions (use lowercase_underscore for IDs, Title Case for labels)"
+      ]
+    }
+  }
+}

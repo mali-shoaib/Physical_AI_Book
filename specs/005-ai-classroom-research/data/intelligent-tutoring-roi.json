@@ -1,0 +1,53 @@
+{
+  "roi_id": "roi-intelligent-tutoring-001",
+  "application_id": "intelligent-tutoring",
+  "school_context": "Medium urban elementary school (500 students, 25 teachers)",
+  "costs": {
+    "software_licensing": {
+      "cost_low": 5000,
+      "cost_high": 8000,
+      "cost_type": "Recurring Annual",
+      "pricing_model": "Per-Student",
+      "assumptions": "Based on premium ITS pricing of $10-$16 per student annually (500 students). Pricing from Carnegie Learning ($15/student), ASSISTments (free-$12/student for premium), DreamBox ($14/student).",
+      "data_source": "Vendor pricing sheets (Carnegie Learning, DreamBox, Khan Academy Premium) as of 2024"
+    },
+    "implementation": {
+      "cost_low": 3000,
+      "cost_high": 5000,
+      "cost_type": "One-Time",
+      "assumptions": "Higher implementation cost due to curriculum alignment requirements. IT setup (30-40 hours at $50/hr), rostering integration, curriculum mapping to standards. Assumes cloud-based deployment.",
+      "data_source": "Industry estimates from EdTech implementation studies; Carnegie Learning implementation guides"
+    },
+    "training": {
+      "cost_low": 4000,
+      "cost_high": 6000,
+      "cost_type": "One-Time",
+      "assumptions": "More intensive training required for ITS. Initial PD workshop (8-10 hours for 25 teachers) plus ongoing coaching. Substitute coverage ($5,000) + vendor training ($1,000-2,000). Some platforms require 10-15 hours initial training per teacher.",
+      "data_source": "Carnegie Learning PD requirements; DreamBox training estimates; average substitute rates"
+    },
+    "maintenance": {
+      "cost_low": 1000,
+      "cost_high": 1500,
+      "cost_type": "Recurring Annual",
+      "assumptions": "Ongoing IT support (15-20 hours/year at $50/hr), content updates, dashboard monitoring, troubleshooting. Higher than basic tools due to curriculum integration.",
+      "data_source": "IT department budgeting estimates for adaptive learning platforms"
+    },
+    "total_year1": 18000,
+    "total_annual_recurring": 7250
+  },
+  "benefits": {
+    "teacher_time_savings": {
+      "hours_saved_per_teacher_per_week": 4.1,
+      "number_of_teachers": 25,
+      "weeks_per_year": 36,
+      "total_hours_saved_annually": 3690
+    },
+    "teacher_hourly_rate_assumption": 40,
+    "annual_benefits_quantified": 147600,
+    "additional_benefits_notes": "Student outcomes: Effect size d=0.47-0.52 on standardized tests, with mathematics showing strongest effects (d=0.52). Meta-analysis shows 15-28% improvement in learning gains. ITS particularly effective for struggling students (d=0.82). Provides 24/7 personalized tutoring, freeing teachers for higher-order instruction and relationship building. Enables true differentiation at scale. Equity benefit: Closes achievement gaps for lower-achieving students with larger effect sizes."
+  },
+  "roi_percentage": 720,
+  "break_even_months": 1.46,
+  "payback_period_description": "Payback in 1.5 months. Year 1 ROI of 720% ($147,600 benefits vs $18,000 total costs). Ongoing annual ROI of 1,936% ($147,600 benefits vs $7,250 recurring costs).",
+  "assumptions_and_caveats": "ROI calculation uses teacher hourly rate of $40. Benefits assume 39% reduction in lesson planning time across 25 teachers (baseline 10.5 hrs/week for differentiated instruction). ITS implementation requires higher upfront investment in training and curriculum alignment compared to automated grading. Success highly dependent on implementation fidelity - meta-analyses show high variability across implementations. Does not quantify substantial student outcome improvements (d=0.47-0.52) in monetary terms. Time savings may vary significantly by teacher experience and subject area. Requires sustained use over time to realize full benefits."
+}

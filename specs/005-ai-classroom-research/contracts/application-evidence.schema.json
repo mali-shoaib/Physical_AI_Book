@@ -1,0 +1,235 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/ai-classroom-research/application-evidence.schema.json",
+  "title": "AI Classroom Application with Evidence",
+  "description": "Schema for documenting AI classroom applications with supporting research evidence",
+  "type": "object",
+  "required": ["application_id", "name", "description", "evidence"],
+  "properties": {
+    "application_id": {
+      "type": "string",
+      "description": "Unique identifier for the application category",
+      "examples": ["automated-grading", "intelligent-tutoring", "ai-writing-feedback"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name for the AI application category",
+      "minLength": 5,
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "Plain-language explanation for non-technical administrators",
+      "minLength": 50,
+      "maxLength": 500
+    },
+    "target_grade_levels": {
+      "type": "array",
+      "description": "Applicable K-12 grade ranges",
+      "items": {
+        "type": "string",
+        "enum": ["K-2", "3-5", "6-8", "9-12", "K-12"]
+      },
+      "minItems": 1
+    },
+    "primary_subject_areas": {
+      "type": "array",
+      "description": "Main academic disciplines",
+      "items": {
+        "type": "string"
+      },
+      "examples": [["Mathematics", "English Language Arts", "Science"]]
+    },
+    "deployment_model": {
+      "type": "string",
+      "enum": ["Cloud-based SaaS", "On-premise software", "Hybrid", "Mobile app"],
+      "description": "How the application is typically deployed"
+    },
+    "example_platforms": {
+      "type": "array",
+      "description": "Named products for context (not endorsements)",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 5
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Peer-reviewed research supporting this application",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["evidence_id", "citation_apa", "authors", "year", "key_findings"],
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "description": "Unique identifier for this evidence record"
+          },
+          "citation_apa": {
+            "type": "string",
+            "description": "Full APA 7th edition reference",
+            "minLength": 20
+          },
+          "authors": {
+            "type": "array",
+            "description": "Author last names for in-text citations",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "year": {
+            "type": "integer",
+            "description": "Publication year",
+            "minimum": 2015,
+            "maximum": 2025
+          },
+          "title": {
+            "type": "string",
+            "description": "Study title"
+          },
+          "source": {
+            "type": "string",
+            "description": "Journal name or publication venue"
+          },
+          "doi": {
+            "type": "string",
+            "description": "Digital Object Identifier (optional)",
+            "pattern": "^10\\.\\d{4,9}/[-._;()/:A-Za-z0-9]+$"
+          },
+          "study_type": {
+            "type": "string",
+            "enum": ["RCT", "Quasi-Experimental", "Meta-Analysis", "Large-Scale Observational"],
+            "description": "Research design methodology"
+          },
+          "sample_size": {
+            "type": "integer",
+            "description": "Number of participants (students, teachers, classrooms)",
+            "minimum": 10
+          },
+          "duration": {
+            "type": "string",
+            "description": "Study length",
+            "examples": ["8 weeks", "1 semester", "1 academic year"]
+          },
+          "context_grade_levels": {
+            "type": "array",
+            "description": "Grades included in study",
+            "items": {
+              "type": "string"
+            }
+          },
+          "context_subject": {
+            "type": "string",
+            "description": "Subject area studied"
+          },
+          "context_demographics": {
+            "type": "string",
+            "description": "School/student characteristics",
+            "examples": ["Urban, 60% free/reduced lunch", "Suburban, predominantly White and Asian"]
+          },
+          "measured_outcomes": {
+            "type": "array",
+            "description": "Specific metrics reported",
+            "items": {
+              "type": "string"
+            },
+            "examples": [["Grading time reduction", "Test score gains", "Engagement metrics"]]
+          },
+          "key_findings": {
+            "type": "string",
+            "description": "Summary of results (2-3 sentences)",
+            "minLength": 50,
+            "maxLength": 500
+          }
+        }
+      }
+    },
+    "workload_metric": {
+      "type": "object",
+      "description": "Quantified teacher workload impact",
+      "required": ["task_category", "time_saved_hours_per_week", "percentage_reduction"],
+      "properties": {
+        "task_category": {
+          "type": "string",
+          "enum": ["Grading", "Lesson Planning", "Administrative", "Feedback Delivery"]
+        },
+        "baseline_time_hours_per_week": {
+          "type": "number",
+          "minimum": 0
+        },
+        "post_ai_time_hours_per_week": {
+          "type": "number",
+          "minimum": 0
+        },
+        "time_saved_hours_per_week": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Calculated: baseline - post_ai"
+        },
+        "percentage_reduction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Calculated: (time_saved / baseline) × 100"
+        },
+        "calculation_methodology": {
+          "type": "string",
+          "description": "How metric was measured"
+        },
+        "confidence_level": {
+          "type": "string",
+          "description": "Statistical confidence (e.g., p < 0.05)",
+          "examples": ["p < 0.05", "95% CI [3.2, 5.8 hours]"]
+        },
+        "supporting_evidence_ids": {
+          "type": "array",
+          "description": "References to evidence records",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "outcome_metric": {
+      "type": "object",
+      "description": "Quantified student outcome impact",
+      "required": ["metric_type", "improvement_quantified"],
+      "properties": {
+        "metric_type": {
+          "type": "string",
+          "enum": ["Test Scores", "Engagement", "Learning Efficiency", "Completion Rates"]
+        },
+        "baseline_measurement": {
+          "type": "string",
+          "description": "Pre-intervention value"
+        },
+        "post_ai_measurement": {
+          "type": "string",
+          "description": "Post-intervention value"
+        },
+        "improvement_quantified": {
+          "type": "string",
+          "description": "Calculated gain",
+          "examples": ["+11 percentage points", "+20% completion rate", "Cohen's d = 0.42"]
+        },
+        "statistical_significance": {
+          "type": "string",
+          "description": "Effect size or p-value"
+        },
+        "supporting_evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "equity_considerations": {
+          "type": "string",
+          "description": "Differential impact by student subgroup (optional)"
+        }
+      }
+    }
+  }
+}

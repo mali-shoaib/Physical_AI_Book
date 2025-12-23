@@ -1,0 +1,177 @@
+#usda 1.0
+(
+    defaultPrim = "Humanoid"
+    upAxis = "Z"
+    metersPerUnit = 1.0
+    kilogramsPerMass = 1.0
+)
+
+def Xform "Humanoid" (
+    kind = "component"
+    references = @./humanoid_stereo_cameras.usda@</Humanoid>
+)
+{
+    # Add IMU sensor to torso
+    over "torso"
+    {
+        def "imu_sensor" (
+            prepend apiSchemas = ["IsaacSensorSchemaIMU"]
+        )
+        {
+            double3 xformOp:translate = (0, 0, 0)
+            double3 xformOp:rotateXYZ = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+
+            # IMU configuration
+            custom float linearAccelerationFilterSize = 10
+            custom float angularVelocityFilterSize = 10
+            custom float orientationFilterSize = 10
+
+            # Noise parameters (realistic IMU noise)
+            custom float linearAccelerationNoise = 0.01  # m/s^2
+            custom float angularVelocityNoise = 0.001    # rad/s
+
+            # Publishing configuration
+            custom string ros2_topic_name = "/imu/data"
+            custom string ros2_frame_id = "imu_link"
+            custom int publish_rate = 100  # Hz
+        }
+
+        def "odometry" (
+            prepend apiSchemas = ["IsaacSensorSchemaOdometry"]
+        )
+        {
+            double3 xformOp:translate = (0, 0, -0.3)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            # Odometry configuration
+            custom float linearVelocityNoise = 0.01   # m/s
+            custom float angularVelocityNoise = 0.001 # rad/s
+
+            # Publishing configuration
+            custom string ros2_topic_name = "/odom"
+            custom string ros2_frame_id = "odom"
+            custom string ros2_child_frame_id = "base_link"
+            custom int publish_rate = 50  # Hz
+        }
+    }
+
+    # Add depth camera for standalone depth perception (in addition to stereo)
+    over "head"
+    {
+        def Camera "depth_camera" (
+            prepend apiSchemas = ["IsaacSimulationSchemaAPI"]
+        )
+        {
+            double3 xformOp:translate = (0, 0.12, 0.05)
+            double3 xformOp:rotateXYZ = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+
+            # Camera intrinsics
+            float focalLength = 24.0
+            float horizontalAperture = 20.955
+            float verticalAperture = 15.2908
+            float2 clippingRange = (0.1, 10.0)
+
+            # Depth sensor configuration
+            token renderProductPath = "/Render/RenderProduct_depth"
+            int width = 640
+            int height = 480
+
+            # Depth-specific settings
+            custom float minDepth = 0.1
+            custom float maxDepth = 10.0
+            custom bool enableDepth = true
+
+            # Metadata for ROS 2 publishing
+            custom string ros2_topic_name = "/depth/image_raw"
+            custom string ros2_frame_id = "depth_camera_optical_frame"
+        }
+
+        # LiDAR sensor for navigation
+        def "lidar_sensor" (
+            prepend apiSchemas = ["IsaacSensorSchemaLidar"]
+        )
+        {
+            double3 xformOp:translate = (0, 0, 0.15)
+            double3 xformOp:rotateXYZ = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+
+            # LiDAR configuration
+            custom int horizontalResolution = 360
+            custom int verticalResolution = 16
+            custom float horizontalFov = 360.0  # degrees
+            custom float verticalFov = 30.0     # degrees
+            custom float minRange = 0.2         # meters
+            custom float maxRange = 100.0       # meters
+            custom float rotationRate = 10.0    # Hz
+
+            # Noise parameters
+            custom float rangeNoise = 0.01      # meters
+
+            # Publishing configuration
+            custom string ros2_topic_name = "/scan"
+            custom string ros2_frame_id = "lidar_link"
+            custom int publish_rate = 10  # Hz
+        }
+    }
+
+    # Contact sensors on feet for Nav2 integration
+    over "left_leg"
+    {
+        def "left_foot_contact" (
+            prepend apiSchemas = ["IsaacSensorSchemaContactSensor"]
+        )
+        {
+            double3 xformOp:translate = (0, 0, -0.5)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            # Contact sensor configuration
+            custom float contactThreshold = 0.5  # Newtons
+            custom bool reportForces = true
+
+            # Publishing configuration
+            custom string ros2_topic_name = "/left_foot/contact"
+            custom string ros2_frame_id = "left_foot_link"
+        }
+    }
+
+    over "right_leg"
+    {
+        def "right_foot_contact" (
+            prepend apiSchemas = ["IsaacSensorSchemaContactSensor"]
+        )
+        {
+            double3 xformOp:translate = (0, 0, -0.5)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            # Contact sensor configuration
+            custom float contactThreshold = 0.5  # Newtons
+            custom bool reportForces = true
+
+            # Publishing configuration
+            custom string ros2_topic_name = "/right_foot/contact"
+            custom string ros2_frame_id = "right_foot_link"
+        }
+    }
+
+    # TF frame hierarchy metadata
+    def "tf_frames" (
+        kind = "component"
+    )
+    {
+        custom string base_frame = "base_link"
+        custom string odom_frame = "odom"
+        custom string map_frame = "map"
+
+        custom string[] sensor_frames = [
+            "imu_link",
+            "left_camera_optical_frame",
+            "right_camera_optical_frame",
+            "depth_camera_optical_frame",
+            "lidar_link",
+            "left_foot_link",
+            "right_foot_link"
+        ]
+    }
+}

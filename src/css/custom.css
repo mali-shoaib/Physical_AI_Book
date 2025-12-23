@@ -1,0 +1,104 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/**
+ * Green Education Theme
+ * All colors verified for WCAG AA compliance (min 4.5:1 contrast)
+ * See: specs/006-docusaurus-landing/research.md Decision 1
+ */
+:root {
+  /* Primary green palette */
+  --ifm-color-primary: #2D7A4F;
+  --ifm-color-primary-dark: #1F5738;
+  --ifm-color-primary-darker: #1A4A2E;
+  --ifm-color-primary-darkest: #0F2E1C;
+  --ifm-color-primary-light: #4A9968;
+  --ifm-color-primary-lighter: #5FA879;
+  --ifm-color-primary-lightest: #8BC8A3;
+
+  /* Hero section colors */
+  --hero-bg-color: #F9FFF9;
+
+  /* CTA button colors */
+  --cta-button-bg: var(--ifm-color-primary);
+  --cta-button-hover-bg: var(--ifm-color-primary-dark);
+
+  /* Background accents */
+  --ifm-background-surface-color: #E8F5E9;
+
+  /* Spacing variables */
+  --hero-padding-desktop: 4rem 2rem; /* 64px 32px */
+  --hero-padding-mobile: 3rem 1.5rem; /* 48px 24px */
+
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability improvements, consider using:
+   https://infima.dev/docs/layout/spacing */
+:root {
+  --ifm-container-width: 1200px;
+}
+
+/* Dark mode overrides */
+[data-theme='dark'] {
+  --ifm-color-primary: #4A9968;
+  --ifm-color-primary-dark: #2D7A4F;
+  --ifm-color-primary-darker: #1F5738;
+  --ifm-color-primary-darkest: #1A4A2E;
+  --ifm-color-primary-light: #5FA879;
+  --ifm-color-primary-lighter: #8BC8A3;
+  --ifm-color-primary-lightest: #A5D6B8;
+  --hero-bg-color: #1A2F1A;
+  --ifm-background-surface-color: #0F2E1C;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Custom styles for code blocks */
+.theme-code-block {
+  margin-bottom: var(--ifm-spacing-vertical);
+}
+
+/* Improve diagram visibility */
+.mermaid {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+/* Custom styling for educational content */
+.textbook-note {
+  background-color: var(--ifm-color-primary-lightest);
+  border-left: 4px solid var(--ifm-color-primary);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.textbook-warning {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+/* Code example download links */
+.code-download {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--ifm-color-primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.code-download:hover {
+  background-color: var(--ifm-color-primary-dark);
+  color: white;
+  text-decoration: none;
+}

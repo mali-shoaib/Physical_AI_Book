@@ -1,0 +1,88 @@
+/**
+ * CTA Button Styles
+ * - Primary: Green background with white text
+ * - Hover: Darker green with subtle lift animation
+ * - Accessibility: respects prefers-reduced-motion
+ */
+
+.ctaButton {
+  background-color: var(--cta-button-bg);
+  border: none;
+  border-radius: var(--ifm-button-border-radius);
+  color: white;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 1.125rem; /* 18px */
+  font-weight: 600;
+  line-height: 1.5;
+  padding: 0.875rem 2rem; /* 14px 32px */
+  text-align: center;
+  text-decoration: none;
+  transition: all 200ms ease-in-out;
+}
+
+.ctaButton:hover {
+  background-color: var(--cta-button-hover-bg);
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(45, 122, 79, 0.2);
+}
+
+.ctaButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(45, 122, 79, 0.2);
+}
+
+/* Focus state for keyboard navigation (accessibility) */
+.ctaButton:focus {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
+
+/* Secondary variant (outline style) */
+.ctaButtonSecondary {
+  background-color: transparent;
+  border: 2px solid var(--ifm-color-primary);
+  border-radius: var(--ifm-button-border-radius);
+  color: var(--ifm-color-primary);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 1.125rem;
+  font-weight: 600;
+  padding: 0.875rem 2rem;
+  text-decoration: none;
+  transition: all 200ms ease-in-out;
+}
+
+.ctaButtonSecondary:hover {
+  background-color: var(--ifm-color-primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Accessibility: disable animations for users with motion sensitivity */
+@media (prefers-reduced-motion: reduce) {
+  .ctaButton,
+  .ctaButtonSecondary {
+    transition: none;
+    transform: none;
+  }
+
+  .ctaButton:hover,
+  .ctaButtonSecondary:hover {
+    transform: none;
+  }
+}
+
+/* Mobile: full-width button on small screens */
+@media (max-width: 767px) {
+  .ctaButton,
+  .ctaButtonSecondary {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

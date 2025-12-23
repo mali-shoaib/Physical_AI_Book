@@ -1,0 +1,174 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://textbook.example.com/schemas/theme-config.json",
+  "title": "Theme Configuration Schema",
+  "description": "CSS custom properties and color configuration for the green education theme",
+  "type": "object",
+  "properties": {
+    "colors": {
+      "type": "object",
+      "description": "Color palette for the green education theme",
+      "properties": {
+        "primary": {
+          "type": "string",
+          "description": "Primary brand color (forest green) - WCAG AA compliant (5.12:1 contrast)",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "default": "#2D7A4F",
+          "examples": ["#2D7A4F"]
+        },
+        "primaryDark": {
+          "type": "string",
+          "description": "Darker shade for hover states - WCAG AA compliant (8.24:1 contrast)",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "default": "#1F5738",
+          "examples": ["#1F5738"]
+        },
+        "primaryLight": {
+          "type": "string",
+          "description": "Lighter shade for accents",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "default": "#4A9968",
+          "examples": ["#4A9968"]
+        },
+        "heroBg": {
+          "type": "string",
+          "description": "Hero section background color (very light green)",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "default": "#F9FFF9",
+          "examples": ["#F9FFF9"]
+        },
+        "backgroundSurface": {
+          "type": "string",
+          "description": "Background accent color (light green tint)",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "default": "#E8F5E9",
+          "examples": ["#E8F5E9"]
+        }
+      },
+      "required": [
+        "primary",
+        "primaryDark",
+        "primaryLight",
+        "heroBg"
+      ],
+      "additionalProperties": false
+    },
+    "typography": {
+      "type": "object",
+      "description": "Typography scale and font configuration",
+      "properties": {
+        "fontFamily": {
+          "type": "string",
+          "description": "System font stack for zero-latency rendering",
+          "default": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif",
+          "examples": [
+            "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          ]
+        },
+        "heroTitleSize": {
+          "type": "object",
+          "description": "Hero title font size (responsive)",
+          "properties": {
+            "desktop": {
+              "type": "string",
+              "pattern": "^[0-9]+(px|rem)$",
+              "default": "3rem",
+              "examples": ["3rem", "48px"]
+            },
+            "mobile": {
+              "type": "string",
+              "pattern": "^[0-9]+(px|rem)$",
+              "default": "2rem",
+              "examples": ["2rem", "32px"]
+            }
+          },
+          "required": ["desktop", "mobile"]
+        },
+        "heroSubtitleSize": {
+          "type": "object",
+          "description": "Hero subtitle font size (responsive)",
+          "properties": {
+            "desktop": {
+              "type": "string",
+              "pattern": "^[0-9.]+(px|rem)$",
+              "default": "1.75rem",
+              "examples": ["1.75rem", "28px"]
+            },
+            "mobile": {
+              "type": "string",
+              "pattern": "^[0-9.]+(px|rem)$",
+              "default": "1.25rem",
+              "examples": ["1.25rem", "20px"]
+            }
+          },
+          "required": ["desktop", "mobile"]
+        }
+      },
+      "required": [
+        "fontFamily",
+        "heroTitleSize",
+        "heroSubtitleSize"
+      ]
+    },
+    "spacing": {
+      "type": "object",
+      "description": "Spacing and padding configuration",
+      "properties": {
+        "heroPadding": {
+          "type": "object",
+          "description": "Hero section padding (responsive)",
+          "properties": {
+            "desktop": {
+              "type": "string",
+              "pattern": "^[0-9.]+(rem|px)( [0-9.]+(rem|px))?$",
+              "default": "4rem 2rem",
+              "examples": ["4rem 2rem", "64px 32px"]
+            },
+            "mobile": {
+              "type": "string",
+              "pattern": "^[0-9.]+(rem|px)( [0-9.]+(rem|px))?$",
+              "default": "3rem 1.5rem",
+              "examples": ["3rem 1.5rem", "48px 24px"]
+            }
+          },
+          "required": ["desktop", "mobile"]
+        }
+      },
+      "required": ["heroPadding"]
+    }
+  },
+  "required": [
+    "colors",
+    "typography",
+    "spacing"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "colors": {
+        "primary": "#2D7A4F",
+        "primaryDark": "#1F5738",
+        "primaryLight": "#4A9968",
+        "heroBg": "#F9FFF9",
+        "backgroundSurface": "#E8F5E9"
+      },
+      "typography": {
+        "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        "heroTitleSize": {
+          "desktop": "3rem",
+          "mobile": "2rem"
+        },
+        "heroSubtitleSize": {
+          "desktop": "1.75rem",
+          "mobile": "1.25rem"
+        }
+      },
+      "spacing": {
+        "heroPadding": {
+          "desktop": "4rem 2rem",
+          "mobile": "3rem 1.5rem"
+        }
+      }
+    }
+  ]
+}

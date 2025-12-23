@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://textbook.example.com/schemas/navbar-config.json",
+  "title": "Navbar Configuration Schema",
+  "description": "Configuration schema for Docusaurus navbar items (Textbook and GitHub links)",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Navbar brand title displayed on the left",
+      "minLength": 1,
+      "maxLength": 50,
+      "examples": [
+        "Educational Textbooks",
+        "Open Textbook Platform"
+      ]
+    },
+    "logo": {
+      "type": "object",
+      "description": "Optional logo configuration",
+      "properties": {
+        "alt": {
+          "type": "string",
+          "description": "Alt text for the logo image (accessibility)",
+          "minLength": 1,
+          "examples": ["Textbook Logo", "Platform Logo"]
+        },
+        "src": {
+          "type": "string",
+          "description": "Path to logo image relative to static directory",
+          "pattern": "^(img/|static/)",
+          "examples": ["img/logo.svg", "img/logo.png"]
+        }
+      },
+      "required": ["alt", "src"]
+    },
+    "items": {
+      "type": "array",
+      "description": "Array of navbar navigation items",
+      "minItems": 2,
+      "maxItems": 10,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "Internal documentation link (Textbook)",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "doc",
+                "description": "Link type for Docusaurus documentation"
+              },
+              "docId": {
+                "type": "string",
+                "description": "Document ID to link to (e.g., 'intro', 'getting-started')",
+                "minLength": 1,
+                "examples": ["intro", "getting-started", "chapter-1"]
+              },
+              "position": {
+                "type": "string",
+                "enum": ["left", "right"],
+                "description": "Position in the navbar",
+                "examples": ["left", "right"]
+              },
+              "label": {
+                "type": "string",
+                "description": "Display text for the link",
+                "minLength": 1,
+                "maxLength": 20,
+                "examples": ["Textbook", "Docs", "Guide"]
+              }
+            },
+            "required": ["type", "docId", "position", "label"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "description": "External link (GitHub)",
+            "properties": {
+              "href": {
+                "type": "string",
+                "description": "External URL (must be https for GitHub)",
+                "format": "uri",
+                "pattern": "^https://",
+                "examples": [
+                  "https://github.com/organization/repository",
+                  "https://github.com/user/project"
+                ]
+              },
+              "label": {
+                "type": "string",
+                "description": "Display text for the link",
+                "minLength": 1,
+                "maxLength": 20,
+                "examples": ["GitHub", "Source Code", "Repository"]
+              },
+              "position": {
+                "type": "string",
+                "enum": ["left", "right"],
+                "description": "Position in the navbar",
+                "examples": ["left", "right"]
+              },
+              "target": {
+                "type": "string",
+                "const": "_blank",
+                "description": "Open link in new tab (required for external links)",
+                "default": "_blank"
+              },
+              "rel": {
+                "type": "string",
+                "const": "noopener noreferrer",
+                "description": "Security attributes for external links (prevents window.opener attacks)",
+                "default": "noopener noreferrer"
+              }
+            },
+            "required": ["href", "label", "position", "target", "rel"],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "title",
+    "items"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "title": "Educational Textbooks",
+      "logo": {
+        "alt": "Textbook Logo",
+        "src": "img/logo.svg"
+      },
+      "items": [
+        {
+          "type": "doc",
+          "docId": "intro",
+          "position": "left",
+          "label": "Textbook"
+        },
+        {
+          "href": "https://github.com/organization/repository",
+          "label": "GitHub",
+          "position": "right",
+          "target": "_blank",
+          "rel": "noopener noreferrer"
+        }
+      ]
+    }
+  ]
+}

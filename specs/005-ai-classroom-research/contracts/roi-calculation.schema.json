@@ -1,0 +1,253 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/ai-classroom-research/roi-calculation.schema.json",
+  "title": "ROI Calculation for AI Classroom Application",
+  "description": "Schema for cost-benefit analysis with break-even timeline",
+  "type": "object",
+  "required": ["roi_id", "application_id", "school_context", "costs", "benefits", "roi_percentage", "break_even_months"],
+  "properties": {
+    "roi_id": {
+      "type": "string",
+      "description": "Unique identifier for this ROI calculation"
+    },
+    "application_id": {
+      "type": "string",
+      "description": "Reference to AI Classroom Application"
+    },
+    "school_context": {
+      "type": "string",
+      "description": "Scenario description",
+      "examples": ["Medium urban elementary (500 students, 25 teachers)", "Large suburban high school (1500 students, 80 teachers)"]
+    },
+    "costs": {
+      "type": "object",
+      "description": "Cost breakdown by category",
+      "required": ["software_licensing", "implementation", "training", "maintenance"],
+      "properties": {
+        "software_licensing": {
+          "type": "object",
+          "required": ["cost_low", "cost_high", "cost_type", "pricing_model"],
+          "properties": {
+            "cost_low": {
+              "type": "number",
+              "description": "Lower bound estimate (USD)",
+              "minimum": 0
+            },
+            "cost_high": {
+              "type": "number",
+              "description": "Upper bound estimate (USD)",
+              "minimum": 0
+            },
+            "cost_type": {
+              "type": "string",
+              "enum": ["One-Time", "Recurring Annual"]
+            },
+            "pricing_model": {
+              "type": "string",
+              "enum": ["Per-Student", "Per-Teacher", "Per-School", "Flat Rate"]
+            },
+            "assumptions": {
+              "type": "string",
+              "description": "Context for estimate"
+            },
+            "data_source": {
+              "type": "string",
+              "description": "Where cost data obtained"
+            }
+          }
+        },
+        "implementation": {
+          "type": "object",
+          "description": "One-time setup costs",
+          "required": ["cost_low", "cost_high", "cost_type"],
+          "properties": {
+            "cost_low": {
+              "type": "number",
+              "minimum": 0
+            },
+            "cost_high": {
+              "type": "number",
+              "minimum": 0
+            },
+            "cost_type": {
+              "type": "string",
+              "const": "One-Time"
+            },
+            "assumptions": {
+              "type": "string"
+            },
+            "data_source": {
+              "type": "string"
+            }
+          }
+        },
+        "training": {
+          "type": "object",
+          "description": "Professional development costs",
+          "required": ["cost_low", "cost_high", "cost_type"],
+          "properties": {
+            "cost_low": {
+              "type": "number",
+              "minimum": 0
+            },
+            "cost_high": {
+              "type": "number",
+              "minimum": 0
+            },
+            "cost_type": {
+              "type": "string",
+              "enum": ["One-Time", "Recurring Annual"]
+            },
+            "assumptions": {
+              "type": "string",
+              "description": "e.g., 2-day workshop for 25 teachers"
+            },
+            "data_source": {
+              "type": "string"
+            }
+          }
+        },
+        "maintenance": {
+          "type": "object",
+          "description": "Ongoing support costs",
+          "required": ["cost_low", "cost_high", "cost_type"],
+          "properties": {
+            "cost_low": {
+              "type": "number",
+              "minimum": 0
+            },
+            "cost_high": {
+              "type": "number",
+              "minimum": 0
+            },
+            "cost_type": {
+              "type": "string",
+              "const": "Recurring Annual"
+            },
+            "assumptions": {
+              "type": "string"
+            },
+            "data_source": {
+              "type": "string"
+            }
+          }
+        },
+        "total_year1": {
+          "type": "number",
+          "description": "Sum of all first-year costs (one-time + recurring)",
+          "minimum": 0
+        },
+        "total_annual_recurring": {
+          "type": "number",
+          "description": "Ongoing annual costs (years 2+)",
+          "minimum": 0
+        }
+      }
+    },
+    "benefits": {
+      "type": "object",
+      "description": "Quantified annual benefits",
+      "required": ["teacher_time_savings", "annual_benefits_quantified"],
+      "properties": {
+        "teacher_time_savings": {
+          "type": "object",
+          "required": ["hours_saved_per_teacher_per_week", "number_of_teachers", "weeks_per_year"],
+          "properties": {
+            "hours_saved_per_teacher_per_week": {
+              "type": "number",
+              "description": "From Teacher Workload Metric",
+              "minimum": 0
+            },
+            "number_of_teachers": {
+              "type": "integer",
+              "description": "Teachers adopting the tool",
+              "minimum": 1
+            },
+            "weeks_per_year": {
+              "type": "integer",
+              "description": "Active school weeks (typically 36)",
+              "minimum": 1,
+              "maximum": 52
+            },
+            "total_hours_saved_annually": {
+              "type": "number",
+              "description": "Calculated: hours/week × teachers × weeks",
+              "minimum": 0
+            }
+          }
+        },
+        "teacher_hourly_rate_assumption": {
+          "type": "number",
+          "description": "Hourly rate for valuing time (USD)",
+          "minimum": 20,
+          "maximum": 100,
+          "examples": [35, 40, 50]
+        },
+        "annual_benefits_quantified": {
+          "type": "number",
+          "description": "Total hours saved × hourly rate (USD)",
+          "minimum": 0
+        },
+        "additional_benefits_notes": {
+          "type": "string",
+          "description": "Non-monetized benefits (e.g., improved student outcomes)"
+        }
+      }
+    },
+    "roi_percentage": {
+      "type": "number",
+      "description": "Calculated: (Benefits - Costs) / Costs × 100",
+      "examples": [150, 850, 1120]
+    },
+    "break_even_months": {
+      "type": "integer",
+      "description": "Months until cumulative benefits exceed cumulative costs",
+      "minimum": 0,
+      "maximum": 120
+    },
+    "payback_period_description": {
+      "type": "string",
+      "description": "Plain-language explanation for administrators",
+      "examples": ["Investment pays for itself within 6 months", "Break-even at 18 months with full adoption"]
+    },
+    "assumptions_and_caveats": {
+      "type": "string",
+      "description": "Limitations of ROI calculation",
+      "examples": ["Assumes 100% teacher adoption; excludes intangible benefits like morale", "Based on average class sizes; actual savings vary by teacher workload"]
+    },
+    "sensitivity_analysis": {
+      "type": "object",
+      "description": "ROI under different scenarios (optional)",
+      "properties": {
+        "best_case": {
+          "type": "object",
+          "properties": {
+            "scenario_description": {
+              "type": "string"
+            },
+            "roi_percentage": {
+              "type": "number"
+            },
+            "break_even_months": {
+              "type": "integer"
+            }
+          }
+        },
+        "worst_case": {
+          "type": "object",
+          "properties": {
+            "scenario_description": {
+              "type": "string"
+            },
+            "roi_percentage": {
+              "type": "number"
+            },
+            "break_even_months": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  }
+}

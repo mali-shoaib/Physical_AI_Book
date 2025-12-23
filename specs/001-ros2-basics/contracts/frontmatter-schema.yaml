@@ -1,0 +1,34 @@
+# YAML Schema for Docusaurus Chapter Frontmatter
+# Example frontmatter for chapter markdown files
+
+---
+id: ch1-ros2-basics  # Document ID (optional, defaults to filename)
+title: "Chapter 1: ROS 2 Basics - Nodes, Topics, Services"  # Page title (required)
+sidebar_label: "Ch1: ROS 2 Basics"  # Sidebar display text (optional)
+sidebar_position: 1  # Order in sidebar (required, integer)
+description: "Introduction to ROS 2 architecture, nodes, topics, and services for humanoid robotics"  # Meta description for SEO (optional)
+keywords:  # SEO keywords (optional)
+  - ROS 2
+  - nodes
+  - topics
+  - services
+  - rclpy
+authors:  # Author metadata (optional)
+  - name: "Physical AI Team"
+    url: "https://github.com/your-org"
+    email: "team@example.com"
+last_updated: 2025-12-18  # ISO 8601 date (optional)
+tags:  # Topic tags for categorization (optional)
+  - ros2
+  - middleware
+  - fundamentals
+---
+
+# Validation Rules:
+# 1. title: Required, string, 1-150 characters
+# 2. sidebar_position: Required, positive integer
+# 3. id: Optional, alphanumeric + hyphens only
+# 4. description: Optional, string, max 300 characters
+# 5. keywords: Optional, array of strings
+# 6. last_updated: Optional, date in YYYY-MM-DD format
+# 7. tags: Optional, array of lowercase strings

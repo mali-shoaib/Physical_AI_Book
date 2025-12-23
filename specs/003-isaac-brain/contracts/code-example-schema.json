@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/module-3-isaac-code-example-schema.json",
+  "title": "Module 3 Code Example Schema",
+  "description": "Validation schema for Module 3 code example structure and metadata",
+  "type": "object",
+  "required": [
+    "filename",
+    "language",
+    "description",
+    "category",
+    "chapter"
+  ],
+  "properties": {
+    "filename": {
+      "type": "string",
+      "description": "Code example filename",
+      "pattern": "^[a-z0-9_]+\\.(py|yaml|yml|sh|bash)$",
+      "examples": [
+        "launch_isaac_sim.py",
+        "stereo_camera_config.yaml",
+        "verify_sensor_topics.sh"
+      ]
+    },
+    "language": {
+      "type": "string",
+      "description": "Programming language",
+      "enum": [
+        "python",
+        "yaml",
+        "bash"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of what the code example does",
+      "minLength": 20,
+      "maxLength": 300,
+      "examples": [
+        "Programmatically launches NVIDIA Isaac Sim, loads the default environment, and configures simulation timestep to 1/60 seconds for real-time physics."
+      ]
+    },
+    "category": {
+      "type": "string",
+      "description": "Code example category",
+      "enum": [
+        "isaac_sim",
+        "isaac_ros",
+        "nav2",
+        "examples"
+      ]
+    },
+    "chapter": {
+      "type": "integer",
+      "description": "Chapter number this code example belongs to",
+      "minimum": 1,
+      "maximum": 6
+    },
+    "hardware_requirements": {
+      "type": "object",
+      "description": "Hardware requirements for running this code example",
+      "required": [
+        "gpu",
+        "ram"
+      ],
+      "properties": {
+        "gpu": {
+          "type": "string",
+          "description": "GPU requirement",
+          "examples": [
+            "NVIDIA RTX 3060 (8GB+ VRAM)",
+            "NVIDIA GPU with Compute Capability 7.0+"
+          ]
+        },
+        "ram": {
+          "type": "string",
+          "description": "RAM requirement",
+          "examples": [
+            "16GB minimum",
+            "8GB minimum"
+          ]
+        },
+        "storage": {
+          "type": "string",
+          "description": "Storage requirement (if applicable)",
+          "examples": [
+            "5GB for dataset export"
+          ]
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Required Python packages, ROS 2 packages, or system dependencies",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "isaac-sim==2024.1.0",
+          "ros-humble-desktop",
+          "isaac-ros-visual-slam"
+        ]
+      ]
+    },
+    "expected_output": {
+      "type": "object",
+      "description": "Description of expected output when running the code",
+      "properties": {
+        "stdout": {
+          "type": "string",
+          "description": "Expected standard output",
+          "examples": [
+            "Isaac Sim launched successfully\\nSimulation timestep: 0.0167s\\nROS 2 bridge enabled"
+          ]
+        },
+        "files": {
+          "type": "array",
+          "description": "Expected output files generated",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "rgb_frame_000.png",
+              "depth_frame_000.npy"
+            ]
+          ]
+        },
+        "ros2_topics": {
+          "type": "array",
+          "description": "Expected ROS 2 topics published",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            [
+              "/left/image_raw",
+              "/right/image_raw",
+              "/imu/data"
+            ]
+          ]
+        }
+      }
+    },
+    "usage": {
+      "type": "string",
+      "description": "Command-line usage example",
+      "examples": [
+        "python launch_isaac_sim.py",
+        "python capture_rgb_depth.py --output-dir ./dataset --num-frames 100",
+        "bash verify_sensor_topics.sh"
+      ]
+    },
+    "notes": {
+      "type": "array",
+      "description": "Additional notes, warnings, or tips",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "Requires Isaac Sim to be installed in default location (/opt/nvidia/isaac-sim)",
+          "May take 30-60 seconds for initial Isaac Sim startup",
+          "Ensure ROS 2 environment is sourced before running"
+        ]
+      ]
+    },
+    "estimated_runtime": {
+      "type": "string",
+      "description": "Estimated runtime for the code example",
+      "pattern": "^\\d+-?\\d*\\s+(seconds?|minutes?)$",
+      "examples": [
+        "30 seconds",
+        "2-3 minutes",
+        "5 minutes"
+      ]
+    }
+  }
+}

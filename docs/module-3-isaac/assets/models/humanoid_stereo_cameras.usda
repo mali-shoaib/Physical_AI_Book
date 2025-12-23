@@ -1,0 +1,93 @@
+#usda 1.0
+(
+    defaultPrim = "Humanoid"
+    upAxis = "Z"
+    metersPerUnit = 1.0
+    kilogramsPerMass = 1.0
+)
+
+def Xform "Humanoid" (
+    kind = "component"
+    references = @./humanoid_base.usda@</Humanoid>
+)
+{
+    # Stereo camera setup on head
+    over "head"
+    {
+        def Camera "left_camera" (
+            prepend apiSchemas = ["IsaacSimulationSchemaAPI"]
+        )
+        {
+            double3 xformOp:translate = (-0.03, 0.1, 0.05)
+            double3 xformOp:rotateXYZ = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+
+            # Camera intrinsics
+            float focalLength = 24.0
+            float horizontalAperture = 20.955
+            float verticalAperture = 15.2908
+            float2 clippingRange = (0.1, 10000.0)
+
+            # RGB sensor configuration
+            token renderProductPath = "/Render/RenderProduct_left_rgb"
+            int width = 1280
+            int height = 720
+
+            # Metadata for ROS 2 publishing
+            custom string ros2_topic_name = "/left/image_raw"
+            custom string ros2_frame_id = "left_camera_optical_frame"
+        }
+
+        def Camera "right_camera" (
+            prepend apiSchemas = ["IsaacSimulationSchemaAPI"]
+        )
+        {
+            double3 xformOp:translate = (0.03, 0.1, 0.05)
+            double3 xformOp:rotateXYZ = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+
+            # Camera intrinsics (must match left camera)
+            float focalLength = 24.0
+            float horizontalAperture = 20.955
+            float verticalAperture = 15.2908
+            float2 clippingRange = (0.1, 10000.0)
+
+            # RGB sensor configuration
+            token renderProductPath = "/Render/RenderProduct_right_rgb"
+            int width = 1280
+            int height = 720
+
+            # Metadata for ROS 2 publishing
+            custom string ros2_topic_name = "/right/image_raw"
+            custom string ros2_frame_id = "right_camera_optical_frame"
+        }
+
+        # Camera calibration metadata
+        def "stereo_calibration" (
+            kind = "component"
+        )
+        {
+            custom float baseline = 0.06  # 6cm baseline between cameras
+            custom string calibration_file = "stereo_camera_calibration.yaml"
+
+            # Camera matrix (example values - adjust based on actual calibration)
+            custom matrix4d left_camera_matrix = (
+                (1000, 0, 640, 0),
+                (0, 1000, 360, 0),
+                (0, 0, 1, 0),
+                (0, 0, 0, 1)
+            )
+
+            custom matrix4d right_camera_matrix = (
+                (1000, 0, 640, 0),
+                (0, 1000, 360, 0),
+                (0, 0, 1, 0),
+                (0, 0, 0, 1)
+            )
+
+            # Distortion coefficients (k1, k2, p1, p2, k3)
+            custom float[] left_distortion = [0.0, 0.0, 0.0, 0.0, 0.0]
+            custom float[] right_distortion = [0.0, 0.0, 0.0, 0.0, 0.0]
+        }
+    }
+}

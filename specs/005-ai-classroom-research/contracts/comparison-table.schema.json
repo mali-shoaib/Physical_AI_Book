@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/ai-classroom-research/comparison-table.schema.json",
+  "title": "AI Classroom Application Comparison Table",
+  "description": "Schema for side-by-side comparison of AI applications (FR-014, SC-007)",
+  "type": "object",
+  "required": ["table_title", "applications"],
+  "properties": {
+    "table_title": {
+      "type": "string",
+      "const": "Comparison of AI Classroom Applications: Impact, Costs, and ROI"
+    },
+    "applications": {
+      "type": "array",
+      "description": "Each AI application with summary metrics",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["application_name", "workload_impact", "student_outcomes", "total_cost_year1", "roi_percentage", "break_even"],
+        "properties": {
+          "application_name": {
+            "type": "string",
+            "description": "AI application category",
+            "examples": ["Automated Grading", "Intelligent Tutoring Systems", "AI Writing/Feedback"]
+          },
+          "workload_impact": {
+            "type": "string",
+            "description": "Quantified teacher time savings",
+            "examples": ["5 hours/week saved (62% reduction)", "3 hours/week saved in lesson planning"]
+          },
+          "student_outcomes": {
+            "type": "string",
+            "description": "Quantified learning/engagement improvements",
+            "examples": ["+11% test scores (d=0.42)", "Homework completion +20 percentage points"]
+          },
+          "total_cost_year1": {
+            "type": "string",
+            "description": "First-year cost range (USD)",
+            "examples": ["$14,750 - $20,000", "$8,500 - $12,000"]
+          },
+          "roi_percentage": {
+            "type": "string",
+            "description": "Return on investment (first year)",
+            "examples": ["1,120%", "850%", "220%"]
+          },
+          "break_even": {
+            "type": "string",
+            "description": "Break-even timeline",
+            "examples": ["1 month", "6 months", "18 months"]
+          },
+          "evidence_strength": {
+            "type": "string",
+            "description": "Quality/quantity of supporting research (optional column)",
+            "enum": ["Strong (5+ RCTs)", "Moderate (3-4 studies)", "Emerging (2 studies)"]
+          },
+          "implementation_difficulty": {
+            "type": "string",
+            "description": "Deployment complexity (optional column)",
+            "enum": ["Low (plug-and-play)", "Moderate (training needed)", "High (extensive setup)"]
+          }
+        }
+      }
+    },
+    "table_notes": {
+      "type": "array",
+      "description": "Footnotes or caveats for table interpretation",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "Costs based on 500-student school with 25 teachers",
+          "ROI assumes full teacher adoption and 36-week school year",
+          "Workload impact varies by subject area and teacher experience"
+        ]
+      ]
+    },
+    "markdown_format": {
+      "type": "string",
+      "description": "Markdown table syntax for embedding in paper",
+      "examples": [
+        "| Application | Workload Impact | Student Outcomes | Year 1 Cost | ROI | Break-Even |\n|-------------|-----------------|------------------|-------------|-----|------------|\n| Automated Grading | 5 hrs/week saved (62%) | +8% test scores | $14,750-$20,000 | 1,120% | 1 month |\n| ITS | 3 hrs/week (lesson planning) | +11% test scores (d=0.42) | $10,000-$15,000 | 850% | 2 months |\n| AI Writing | 4 hrs/week (feedback) | +15% writing quality | $8,500-$12,000 | 950% | 1.5 months |"
+      ]
+    }
+  }
+}

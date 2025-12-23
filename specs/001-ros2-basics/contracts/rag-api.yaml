@@ -1,0 +1,238 @@
+# OpenAPI 3.0 Specification for RAG Chatbot API
+
+openapi: 3.0.3
+info:
+  title: Physical AI Textbook RAG API
+  description: Retrieval-Augmented Generation API for answering questions from textbook content
+  version: 1.0.0
+  contact:
+    name: Physical AI Team
+    email: team@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:8000
+    description: Development server
+
+paths:
+  /api/rag/query:
+    post:
+      summary: Query the RAG system
+      description: Submit a user question and receive an answer based on textbook content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RAGQueryRequest'
+      responses:
+        '200':
+          description: Successful query response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAGQueryResponse'
+        '400':
+          description: Invalid request (empty query, invalid chapter IDs)
+        '500':
+          description: Server error (embedding API failure, vector DB unavailable)
+
+  /api/chapters:
+    get:
+      summary: List all indexed chapters
+      description: Get metadata for all chapters available for querying
+      responses:
+        '200':
+          description: List of chapters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chapters:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChapterMetadata'
+
+  /api/rag/reindex:
+    post:
+      summary: Trigger re-indexing of embeddings
+      description: Admin endpoint to rebuild RAG embeddings (requires authentication)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chapter_id:
+                  type: string
+                  description: Specific chapter to reindex (optional, all if omitted)
+                force:
+                  type: boolean
+                  default: false
+                  description: Force re-embedding even if content unchanged
+      responses:
+        '202':
+          description: Reindexing started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [accepted]
+                  task_id:
+                    type: string
+                  estimated_time_seconds:
+                    type: integer
+        '401':
+          description: Unauthorized (missing or invalid token)
+        '403':
+          description: Forbidden (insufficient permissions)
+
+components:
+  schemas:
+    RAGQueryRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: User's natural language question
+          example: "How do I create a ROS 2 publisher node in Python?"
+        chapter_ids:
+          type: array
+          items:
+            type: string
+          description: Optional filter to search only specific chapters
+          example: ["ch1-ros2-basics", "ch2-rclpy-control"]
+        conversation_id:
+          type: string
+          format: uuid
+          description: Conversation ID for tracking history
+        top_k:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+          description: Number of relevant chunks to retrieve
+        model:
+          type: string
+          default: "gpt-3.5-turbo"
+          enum: ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo"]
+          description: LLM model for generating response
+
+    RAGQueryResponse:
+      type: object
+      required:
+        - answer
+        - sources
+      properties:
+        answer:
+          type: string
+          description: Generated answer from LLM based on retrieved context
+          example: "To create a ROS 2 publisher node in Python, import rclpy and create a node with create_publisher()..."
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
+          description: Relevant chunks used to generate the answer
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Confidence score for the answer (0.0 = low, 1.0 = high)
+        query_tokens:
+          type: integer
+          description: Number of tokens in the query + context
+        response_tokens:
+          type: integer
+          description: Number of tokens in the generated response
+        conversation_id:
+          type: string
+          format: uuid
+          description: Conversation ID for follow-up queries
+
+    Source:
+      type: object
+      required:
+        - chunk_id
+        - chapter
+        - url
+        - snippet
+        - relevance
+      properties:
+        chunk_id:
+          type: string
+          example: "module-1-ch1-ros2-basics-001"
+        chapter:
+          type: string
+          example: "Ch1: ROS 2 Basics"
+        section:
+          type: string
+          example: "Nodes and Topics"
+        heading_h2:
+          type: string
+          example: "Publisher-Subscriber Pattern"
+        heading_h3:
+          type: string
+          nullable: true
+          example: "Creating a Publisher"
+        snippet:
+          type: string
+          maxLength: 300
+          description: Excerpt from the chunk (truncated for display)
+          example: "ROS 2 nodes communicate via topics. A publisher node sends messages..."
+        url:
+          type: string
+          format: uri
+          example: "/module-1-ros2/ch1-ros2-basics#nodes-and-topics"
+        relevance:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Cosine similarity score between query and chunk embeddings
+          example: 0.87
+
+    ChapterMetadata:
+      type: object
+      required:
+        - id
+        - title
+        - module
+        - url
+      properties:
+        id:
+          type: string
+          example: "ch1-ros2-basics"
+        title:
+          type: string
+          example: "Chapter 1: ROS 2 Basics"
+        module:
+          type: string
+          example: "Module 1: ROS 2"
+        url:
+          type: string
+          format: uri
+          example: "/module-1-ros2/ch1-ros2-basics"
+        chunk_count:
+          type: integer
+          description: Number of RAG chunks for this chapter
+          example: 15
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for admin endpoints
