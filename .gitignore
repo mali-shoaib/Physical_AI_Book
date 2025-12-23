@@ -84,3 +84,5 @@ ExportedObj/
 *.unitypackage
 *.apk
 *.aab
+
+.vercel

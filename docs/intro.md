@@ -97,8 +97,8 @@ If you use this textbook in your research or teaching, please cite:
   title={Physical AI \& Humanoid Robotics: An AI-Native Textbook},
   author={Physical AI Team},
   year={2025},
-  publisher={GitHub Pages},
-  url={https://your-org.github.io/books/}
+  publisher={Vercel},
+  url={https://physical-ai-robotics-textbook-xi.vercel.app}
 }
 ```
 
@@ -108,4 +108,4 @@ This textbook is licensed under the MIT License. Code examples are freely availa
 
 ---
 
-**Ready to begin?** Start with [Module 1: ROS 2 Basics](/books/docs/module-1-ros2/ch1-ros2-basics) →
+**Ready to begin?** Start with [Module 1: ROS 2 Basics](/docs/module-1-ros2/ch1-ros2-basics) →
