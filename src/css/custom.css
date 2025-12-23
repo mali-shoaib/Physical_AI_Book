@@ -5,29 +5,28 @@
  */
 
 /**
- * Green Education Theme
- * All colors verified for WCAG AA compliance (min 4.5:1 contrast)
- * See: specs/006-docusaurus-landing/research.md Decision 1
+ * Custom Theme - Matching Reference Site
+ * Using Docusaurus default color scheme
  */
 :root {
-  /* Primary green palette */
-  --ifm-color-primary: #2D7A4F;
-  --ifm-color-primary-dark: #1F5738;
-  --ifm-color-primary-darker: #1A4A2E;
-  --ifm-color-primary-darkest: #0F2E1C;
-  --ifm-color-primary-light: #4A9968;
-  --ifm-color-primary-lighter: #5FA879;
-  --ifm-color-primary-lightest: #8BC8A3;
+  /* Primary color palette - Docusaurus default blue */
+  --ifm-color-primary: #2e8555;
+  --ifm-color-primary-dark: #29784c;
+  --ifm-color-primary-darker: #277148;
+  --ifm-color-primary-darkest: #205d3b;
+  --ifm-color-primary-light: #33925d;
+  --ifm-color-primary-lighter: #359962;
+  --ifm-color-primary-lightest: #3cad6e;
 
   /* Hero section colors */
-  --hero-bg-color: #F9FFF9;
+  --hero-bg-color: #f5f6f7;
 
   /* CTA button colors */
   --cta-button-bg: var(--ifm-color-primary);
   --cta-button-hover-bg: var(--ifm-color-primary-dark);
 
   /* Background accents */
-  --ifm-background-surface-color: #E8F5E9;
+  --ifm-background-surface-color: #ffffff;
 
   /* Spacing variables */
   --hero-padding-desktop: 4rem 2rem; /* 64px 32px */
@@ -45,15 +44,15 @@
 
 /* Dark mode overrides */
 [data-theme='dark'] {
-  --ifm-color-primary: #4A9968;
-  --ifm-color-primary-dark: #2D7A4F;
-  --ifm-color-primary-darker: #1F5738;
-  --ifm-color-primary-darkest: #1A4A2E;
-  --ifm-color-primary-light: #5FA879;
-  --ifm-color-primary-lighter: #8BC8A3;
-  --ifm-color-primary-lightest: #A5D6B8;
-  --hero-bg-color: #1A2F1A;
-  --ifm-background-surface-color: #0F2E1C;
+  --ifm-color-primary: #25c2a0;
+  --ifm-color-primary-dark: #21af90;
+  --ifm-color-primary-darker: #1fa588;
+  --ifm-color-primary-darkest: #1a8870;
+  --ifm-color-primary-light: #29d5b0;
+  --ifm-color-primary-lighter: #32d8b4;
+  --ifm-color-primary-lightest: #4fddbf;
+  --hero-bg-color: #1b1b1d;
+  --ifm-background-surface-color: #242526;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
@@ -70,7 +69,7 @@
 
 /* Custom styling for educational content */
 .textbook-note {
-  background-color: var(--ifm-color-primary-lightest);
+  background-color: #e7f2fd;
   border-left: 4px solid var(--ifm-color-primary);
   padding: 1rem;
   margin: 1rem 0;
