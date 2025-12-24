@@ -1,0 +1,367 @@
+# Pipeline Function Contracts
+# Feature: 007-embedding-pipeline
+# Purpose: Define function signatures, inputs, outputs, and error conditions
+
+functions:
+  - name: get_all_urls
+    description: Crawl Docusaurus sitemap and return all documentation URLs
+    inputs:
+      - name: base_url
+        type: string
+        required: true
+        description: Docusaurus base URL (e.g., "https://physical-ai-robotics-textbook-xi.vercel.app")
+        validation:
+          - Must start with "https://"
+          - Must be valid URL format
+    outputs:
+      - name: urls
+        type: List[str]
+        description: List of filtered documentation URLs (only /docs/* paths)
+        validation:
+          - All URLs must start with base_url
+          - All URLs must match pattern "*/docs/*"
+          - No duplicate URLs
+    errors:
+      - code: HTTP_ERROR
+        condition: Sitemap fetch fails (404, 500, timeout)
+        handling: Retry with exponential backoff (max 3 attempts), then fail
+      - code: PARSE_ERROR
+        condition: Sitemap XML is malformed
+        handling: Log error and fail (no retry)
+    performance:
+      - expected_duration: "< 5 seconds"
+      - max_retries: 3
+
+  - name: extract_text_from_url
+    description: Fetch HTML and extract cleaned text with metadata
+    inputs:
+      - name: url
+        type: string
+        required: true
+        description: Full URL of Docusaurus page
+        validation:
+          - Must be valid HTTPS URL
+    outputs:
+      - name: text
+        type: string
+        description: Cleaned text content (HTML stripped, structure preserved)
+      - name: metadata
+        type: Dict
+        description: Page metadata
+        schema:
+          source_url: string
+          chapter_id: string  # Derived from URL path
+          module_name: string  # Derived from URL path
+          heading_hierarchy: List[str]  # Extracted from HTML headers
+          fetch_timestamp: string  # ISO 8601
+    errors:
+      - code: HTTP_ERROR
+        condition: Page fetch fails (404, 500, timeout)
+        handling: Retry with exponential backoff (max 3 attempts), log error
+      - code: EXTRACTION_ERROR
+        condition: Cannot find main content element (article.markdown)
+        handling: Log warning, return empty text
+      - code: EMPTY_CONTENT
+        condition: Extracted text is empty or < 100 characters
+        handling: Log warning, skip page
+    performance:
+      - expected_duration: "< 3 seconds per page"
+      - max_retries: 3
+
+  - name: chunk_text
+    description: Split text into semantic chunks with overlap
+    inputs:
+      - name: text
+        type: string
+        required: true
+        description: Cleaned text from extract_text_from_url
+      - name: metadata
+        type: Dict
+        required: true
+        description: Page metadata to propagate to chunks
+      - name: chunk_size
+        type: int
+        required: false
+        default: 768
+        description: Target chunk size in tokens
+        validation:
+          - Must be between 512 and 1024
+      - name: chunk_overlap
+        type: int
+        required: false
+        default: 150
+        description: Overlap size in tokens (10-20% of chunk_size)
+        validation:
+          - Must be 10-20% of chunk_size
+    outputs:
+      - name: chunks
+        type: List[Tuple[str, Dict]]
+        description: List of (chunk_text, chunk_metadata) tuples
+        chunk_metadata_schema:
+          chunk_id: string  # UUID
+          chunk_text: string
+          token_count: int
+          source_url: string  # From input metadata
+          chapter_id: string  # From input metadata
+          module_name: string  # From input metadata
+          heading_hierarchy: List[str]  # From input metadata
+          chunk_index: int  # 0-based position
+          total_chunks: int  # Total for this page
+          overlap_text: string | null  # Text overlapping with previous chunk
+    errors:
+      - code: INVALID_TOKEN_COUNT
+        condition: Chunk token count outside 512-1024 range
+        handling: Log error, attempt smaller split
+      - code: EMPTY_TEXT
+        condition: Input text is empty
+        handling: Return empty list, log warning
+    performance:
+      - expected_duration: "< 1 second per page"
+
+  - name: embed
+    description: Generate Cohere embeddings for batch of texts
+    inputs:
+      - name: texts
+        type: List[str]
+        required: true
+        description: List of chunk texts to embed
+        validation:
+          - List length must be 1-96 (Cohere API limit)
+          - Each text must be non-empty
+      - name: model
+        type: string
+        required: false
+        default: "embed-english-v3.0"
+        description: Cohere embedding model version
+      - name: input_type
+        type: string
+        required: false
+        default: "search_document"
+        description: Cohere input type for ingestion
+    outputs:
+      - name: embeddings
+        type: List[List[float]]
+        description: List of 1024-dimensional embedding vectors
+        validation:
+          - Length must match input texts length
+          - Each vector must have 1024 dimensions
+          - Each dimension must be float in range [-1.0, 1.0]
+    errors:
+      - code: RATE_LIMIT_ERROR
+        condition: Cohere API rate limit exceeded
+        handling: Exponential backoff retry (2s, 4s, 8s), max 3 attempts
+      - code: API_ERROR
+        condition: Cohere API returns 500/503
+        handling: Retry with backoff, max 3 attempts
+      - code: AUTH_ERROR
+        condition: Invalid Cohere API key
+        handling: Fail immediately, log error
+      - code: BATCH_SIZE_ERROR
+        condition: Batch size > 96
+        handling: Split into smaller batches automatically
+    performance:
+      - expected_duration: "< 5 seconds per batch (p95)"
+      - max_retries: 3
+
+  - name: create_collection
+    description: Initialize Qdrant collection with configuration
+    inputs:
+      - name: client
+        type: QdrantClient
+        required: true
+        description: Initialized Qdrant client instance
+      - name: name
+        type: string
+        required: true
+        description: Collection name (fixed: "rag_embedding")
+        validation:
+          - Must equal "rag_embedding"
+      - name: vector_size
+        type: int
+        required: false
+        default: 1024
+        description: Vector dimension size
+      - name: distance
+        type: string
+        required: false
+        default: "Cosine"
+        description: Distance metric for similarity search
+    outputs:
+      - name: success
+        type: bool
+        description: True if collection created or already exists
+    errors:
+      - code: CONNECTION_ERROR
+        condition: Cannot connect to Qdrant instance
+        handling: Retry with backoff (max 3 attempts), then fail
+      - code: ALREADY_EXISTS
+        condition: Collection already exists with different config
+        handling: Log warning, skip creation (idempotent)
+    performance:
+      - expected_duration: "< 2 seconds"
+
+  - name: save_chunk_to_qdrant
+    description: Upsert single chunk with embedding and metadata
+    inputs:
+      - name: client
+        type: QdrantClient
+        required: true
+        description: Initialized Qdrant client instance
+      - name: chunk_text
+        type: string
+        required: true
+        description: Original chunk text content
+      - name: embedding
+        type: List[float]
+        required: true
+        description: 1024-dimensional embedding vector
+        validation:
+          - Length must be 1024
+      - name: metadata
+        type: Dict
+        required: true
+        description: Chunk metadata payload
+        schema:
+          chunk_id: string  # UUID
+          source_url: string
+          chapter_id: string
+          module_name: string
+          heading_hierarchy: List[str]
+          chunk_index: int
+          chunk_text: string
+          timestamp: string  # ISO 8601
+          model_version: string  # e.g., "embed-english-v3.0"
+    outputs:
+      - name: point_id
+        type: string
+        description: UUID of upserted Qdrant point
+    errors:
+      - code: CONNECTION_ERROR
+        condition: Qdrant connection lost
+        handling: Retry with backoff (max 3 attempts)
+      - code: VALIDATION_ERROR
+        condition: Invalid metadata schema
+        handling: Log error, skip chunk
+      - code: UPSERT_ERROR
+        condition: Qdrant upsert fails
+        handling: Retry with backoff (max 3 attempts), log failure
+    performance:
+      - expected_duration: "< 0.5 seconds per chunk"
+      - max_retries: 3
+
+  - name: main
+    description: Orchestrate full pipeline execution
+    inputs:
+      - name: base_url
+        type: string
+        required: false
+        default: "env:DOCUSAURUS_BASE_URL"
+        description: Docusaurus base URL (from .env if not provided)
+      - name: cohere_api_key
+        type: string
+        required: false
+        default: "env:COHERE_API_KEY"
+        description: Cohere API key (from .env)
+      - name: qdrant_url
+        type: string
+        required: false
+        default: "env:QDRANT_URL"
+        description: Qdrant instance URL (from .env)
+      - name: qdrant_api_key
+        type: string
+        required: false
+        default: "env:QDRANT_API_KEY"
+        description: Qdrant API key (from .env)
+    outputs:
+      - name: job_report
+        type: Dict
+        description: Ingestion job summary
+        schema:
+          job_id: string
+          status: string  # "completed" | "failed" | "partial_success"
+          duration_seconds: int
+          stats:
+            pages_discovered: int
+            pages_fetched_success: int
+            pages_fetched_failed: int
+            chunks_created: int
+            embeddings_generated: int
+            embeddings_failed: int
+            qdrant_upserts_success: int
+            qdrant_upserts_failed: int
+          success_rate: float
+          errors: List[Dict]  # Error logs
+    errors:
+      - code: ENV_VAR_MISSING
+        condition: Required environment variables not set
+        handling: Fail immediately with clear error message
+      - code: PIPELINE_FAILURE
+        condition: Critical step fails (e.g., Qdrant unreachable)
+        handling: Log partial progress, fail gracefully
+    performance:
+      - expected_duration: "< 30 minutes for full textbook ingestion"
+
+# Pipeline Execution Flow
+execution_flow:
+  steps:
+    - step: 1
+      function: main
+      description: "Initialize clients, load config from .env"
+    - step: 2
+      function: create_collection
+      description: "Ensure Qdrant collection 'rag_embedding' exists"
+    - step: 3
+      function: get_all_urls
+      description: "Crawl sitemap, discover all /docs/* URLs"
+    - step: 4
+      function: extract_text_from_url
+      description: "For each URL: fetch HTML, extract text, create metadata"
+      loop: "for url in urls"
+    - step: 5
+      function: chunk_text
+      description: "For each page: split text into semantic chunks"
+      loop: "for (text, metadata) in pages"
+    - step: 6
+      function: embed
+      description: "Batch chunks (up to 96), generate Cohere embeddings"
+      batching: true
+      batch_size: 96
+    - step: 7
+      function: save_chunk_to_qdrant
+      description: "For each chunk: upsert to Qdrant with metadata"
+      loop: "for (chunk, embedding, metadata) in processed"
+    - step: 8
+      function: validation (inline)
+      description: "Run test queries, validate retrieval quality"
+    - step: 9
+      function: main
+      description: "Generate and return job summary report"
+
+# Error Handling Strategy
+error_handling:
+  - strategy: exponential_backoff
+    applicable_to: [HTTP_ERROR, RATE_LIMIT_ERROR, CONNECTION_ERROR, API_ERROR]
+    config:
+      multiplier: 1
+      min_wait: 2  # seconds
+      max_wait: 10  # seconds
+      max_attempts: 3
+  - strategy: skip_and_log
+    applicable_to: [EMPTY_CONTENT, EXTRACTION_ERROR, INVALID_TOKEN_COUNT]
+    config:
+      log_level: WARNING
+  - strategy: fail_fast
+    applicable_to: [AUTH_ERROR, ENV_VAR_MISSING]
+    config:
+      log_level: ERROR
+
+# Logging Format
+logging:
+  level: INFO
+  format: "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan> - <level>{message}</level>"
+  fields:
+    - timestamp
+    - level
+    - function_name
+    - message
+    - extras (chunk_id, url, error_type, etc.)

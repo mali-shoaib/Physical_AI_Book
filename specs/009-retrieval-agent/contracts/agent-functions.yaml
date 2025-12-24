@@ -1,0 +1,409 @@
+# Agent Functions Contract
+# Feature: 009-retrieval-agent
+# Purpose: Define function signatures for RAG agent implementation
+
+---
+
+# Core Retrieval Function (OpenAI Tool)
+
+retrieve_context:
+  description: |
+    Retrieve relevant content from the Physical AI textbook based on semantic similarity.
+    This function queries Qdrant vector database and returns chunks above the similarity threshold.
+
+  tool_schema:
+    type: function
+    function:
+      name: retrieve_context
+      description: Retrieve relevant content from the Physical AI textbook based on semantic similarity
+      parameters:
+        type: object
+        properties:
+          query:
+            type: string
+            description: The search query to find relevant textbook content
+          top_k:
+            type: integer
+            description: Number of most relevant chunks to retrieve (default 5)
+            default: 5
+            minimum: 1
+            maximum: 10
+          threshold:
+            type: number
+            description: Minimum similarity score (0-1, default 0.70)
+            default: 0.70
+            minimum: 0.0
+            maximum: 1.0
+        required:
+          - query
+
+  input:
+    query: str  # Search query text
+    top_k: int  # Number of results (default: 5)
+    threshold: float  # Minimum similarity (default: 0.70)
+
+  output:
+    type: List[RetrievalResult]
+    description: List of retrieved chunks with metadata, sorted by similarity descending
+
+  errors:
+    - QdrantConnectionError: Unable to connect to Qdrant
+    - CohereEmbeddingError: Failed to generate query embedding
+    - EmptyQueryError: Query text is empty or whitespace only
+
+  example:
+    input:
+      query: "What is ROS 2?"
+      top_k: 5
+      threshold: 0.70
+    output:
+      - chunk_id: "uuid-abc123"
+        chunk_text: "ROS 2 is a flexible framework for writing robot software..."
+        similarity_score: 0.87
+        source_url: "https://physical-ai-robotics-textbook-xi.vercel.app/docs/module-1-ros2/ch1-basics"
+        chapter_id: "module-1-ros2/ch1-basics"
+        module_name: "Module 1 Ros2"
+        heading_hierarchy: ["Chapter 1: ROS 2 Basics", "What is ROS 2?"]
+        token_count: 42
+        chunk_index: 0
+
+---
+
+# Agent Management Functions
+
+initialize_agent:
+  description: Initialize OpenAI agent with system prompt and retrieval tool
+
+  input:
+    model: str  # OpenAI model name (e.g., "gpt-4")
+    max_history: int  # Max conversation messages (default: 20)
+
+  output:
+    type: AgentSession
+    description: Initialized agent session with empty conversation history
+
+  errors:
+    - OpenAIAuthError: Invalid OPENAI_API_KEY
+    - ModelNotFoundError: Specified model not available
+
+  example:
+    input:
+      model: "gpt-4"
+      max_history: 20
+    output:
+      session_id: "550e8400-e29b-41d4-a716-446655440000"
+      model: "gpt-4"
+      conversation_history:
+        - role: "system"
+          content: "You are a helpful assistant for the Physical AI Robotics Textbook..."
+      max_history: 20
+      is_interactive: false
+
+---
+
+ask_question:
+  description: Send user question to agent and get grounded response
+
+  input:
+    session: AgentSession  # Current session
+    query: str  # User question
+
+  output:
+    type: AgentResponse
+    description: Answer with citations and metadata
+
+  errors:
+    - EmptyQueryError: Query is empty or whitespace
+    - APIError: OpenAI API request failed
+    - TokenLimitError: Conversation exceeds context limit
+
+  example:
+    input:
+      session: <AgentSession object>
+      query: "What is ROS 2?"
+    output:
+      answer: "ROS 2 is a flexible framework for writing robot software [Source: Module 1 - ROS 2 Basics]..."
+      citations:
+        - chunk_id: "uuid-abc123"
+          similarity_score: 0.87
+          source_url: "https://..."
+      retrieval_count: 3
+      model_used: "gpt-4"
+      tokens_used: 450
+      grounded: true
+      timestamp: "2025-12-23T18:30:20Z"
+
+---
+
+reset_conversation:
+  description: Clear conversation history while keeping system message
+
+  input:
+    session: AgentSession  # Session to reset
+
+  output:
+    type: AgentSession
+    description: Same session with cleared history (system message preserved)
+
+  errors:
+    - SessionNotFoundError: Invalid or expired session
+
+  example:
+    input:
+      session: <AgentSession with 10 messages>
+    output:
+      session_id: "same-uuid"
+      conversation_history:
+        - role: "system"
+          content: "You are a helpful assistant..."
+      # All other messages cleared
+
+---
+
+# Helper Functions
+
+embed_query:
+  description: Generate Cohere embedding for user query
+
+  input:
+    query_text: str  # Query to embed
+
+  output:
+    type: List[float]
+    description: 1024-dimensional embedding vector
+
+  errors:
+    - CohereAPIError: Cohere API request failed
+    - EmptyQueryError: Query text is empty
+
+  example:
+    input:
+      query_text: "What is ROS 2?"
+    output:
+      [0.023, -0.145, 0.892, ...]  # 1024 floats
+
+---
+
+format_citations:
+  description: Format retrieved chunks into citation strings
+
+  input:
+    results: List[RetrievalResult]  # Retrieved chunks
+
+  output:
+    type: str
+    description: Formatted context string with citations for agent
+
+  example:
+    input:
+      results:
+        - chunk_id: "uuid-abc"
+          chunk_text: "ROS 2 is..."
+          source_url: "https://..."
+          module_name: "Module 1 Ros2"
+    output: |
+      [Source: Module 1 Ros2]
+      ROS 2 is a flexible framework for writing robot software...
+
+      [Source: Module 1 Ros2]
+      ...
+
+---
+
+validate_environment:
+  description: Check required environment variables on startup
+
+  input: null
+
+  output:
+    type: bool
+    description: True if all variables present, raises error otherwise
+
+  errors:
+    - MissingEnvVarError: OPENAI_API_KEY, COHERE_API_KEY, QDRANT_URL, or QDRANT_API_KEY missing
+
+  example:
+    output: true
+
+---
+
+# CLI Entry Points
+
+single_question_mode:
+  description: Answer one question and exit
+
+  input:
+    question: str  # User question
+    args: argparse.Namespace  # CLI arguments (model, max_history, etc.)
+
+  output:
+    type: None
+    description: Prints answer to stdout, exits with code 0 or 1
+
+  side_effects:
+    - Prints answer and citations to stdout
+    - Logs retrieval operations
+    - Exits with code 0 (success) or 1 (error)
+
+  example:
+    input:
+      question: "What is ROS 2?"
+      args:
+        model: "gpt-4"
+        show_citations: true
+    output: |
+      ROS 2 is a flexible framework for writing robot software [Source: Module 1 - ROS 2 Basics]...
+
+      Citations:
+      1. Module 1 Ros2 - ROS 2 Basics (Similarity: 0.87)
+         URL: https://physical-ai-robotics-textbook-xi.vercel.app/docs/module-1-ros2/ch1-basics
+
+---
+
+interactive_mode:
+  description: Start interactive conversation loop
+
+  input:
+    args: argparse.Namespace  # CLI arguments
+
+  output:
+    type: None
+    description: Runs until user exits
+
+  side_effects:
+    - Prompts user for input in loop
+    - Prints responses to stdout
+    - Logs all interactions
+    - Exits on "exit", "quit", or Ctrl+C
+
+  commands:
+    - "exit" | "quit" | "bye": Exit interactive mode
+    - "reset": Clear conversation history
+    - "help": Show available commands
+
+  example:
+    input:
+      args:
+        model: "gpt-4"
+        max_history: 20
+    interaction: |
+      You: What is ROS 2?
+      Assistant: ROS 2 is a flexible framework...
+
+      You: How do I install it?
+      Assistant: To install ROS 2...
+
+      You: exit
+      Goodbye!
+
+---
+
+# Configuration
+
+environment_variables:
+  OPENAI_API_KEY:
+    required: true
+    description: OpenAI API key for agent
+
+  COHERE_API_KEY:
+    required: true
+    description: Cohere API key for query embeddings
+
+  QDRANT_URL:
+    required: true
+    description: Qdrant instance URL
+
+  QDRANT_API_KEY:
+    required: true
+    description: Qdrant API key
+
+  OPENAI_MODEL:
+    required: false
+    default: "gpt-4"
+    description: Default OpenAI model
+
+  AGENT_MAX_HISTORY:
+    required: false
+    default: 20
+    description: Max conversation history messages
+
+  LOG_LEVEL:
+    required: false
+    default: "INFO"
+    description: Logging level (DEBUG, INFO, WARNING, ERROR)
+
+---
+
+# CLI Arguments
+
+cli_arguments:
+  positional:
+    question:
+      type: str
+      nargs: "?"
+      help: Question to ask (single-shot mode)
+
+  flags:
+    --interactive:
+      action: store_true
+      help: Start interactive conversation mode
+
+    --model:
+      type: str
+      default: "gpt-4"
+      help: OpenAI model to use
+
+    --max-history:
+      type: int
+      default: 20
+      help: Maximum conversation history messages
+
+    --show-citations:
+      action: store_true
+      help: Display detailed citations with each answer
+
+    --log-level:
+      type: str
+      default: "INFO"
+      choices: ["DEBUG", "INFO", "WARNING", "ERROR"]
+      help: Logging verbosity
+
+    --threshold:
+      type: float
+      default: 0.70
+      help: Minimum similarity threshold for retrieval
+
+    --top-k:
+      type: int
+      default: 5
+      help: Number of chunks to retrieve per query
+
+---
+
+# Error Codes
+
+exit_codes:
+  0: Success - Answer generated successfully
+  1: Error - General failure (API error, invalid input, etc.)
+  130: User interrupt (Ctrl+C)
+
+---
+
+# Performance Targets
+
+performance:
+  retrieval_latency: "<2 seconds (p95)"
+  end_to_end_latency: "<10 seconds (p95)"
+  token_limit: "128,000 tokens (gpt-4-turbo context limit)"
+  memory_usage: "<100 MB for active session"
+
+---
+
+# Notes
+
+- All timestamps are UTC in ISO 8601 format
+- All UUIDs are version 4
+- Similarity scores are cosine similarity (0.0-1.0)
+- Token counts use tiktoken with model-specific encoding
+- Retry logic uses exponential backoff: 2s, 4s, 8s (max 3 attempts)
+- Conversation history uses sliding window when max_history exceeded

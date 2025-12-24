@@ -1,0 +1,575 @@
+openapi: 3.0.0
+info:
+  title: Docusaurus Chatbot RAG API
+  description: |
+    REST API for the Docusaurus RAG-based chatbot that integrates with the FastAPI backend.
+    This API provides endpoints for interactive Q&A about textbook content using retrieval-augmented generation (RAG).
+
+    **CORS Configuration**: The backend MUST be configured to accept requests from the Docusaurus frontend:
+    - Allowed origins: http://localhost:3000 (development)
+    - Allowed methods: POST, GET, OPTIONS
+    - Allowed headers: Content-Type, Accept
+    - Credentials: Not required (local development only)
+
+    **Error Handling**: All error responses follow a consistent JSON structure with HTTP status codes:
+    - 400: Bad request (validation error in request payload)
+    - 404: Not found (conversation_id does not exist)
+    - 414: URI too long (query exceeds maximum length of 500 characters)
+    - 429: Too many requests (rate limit exceeded - max 10 requests per 60 seconds)
+    - 503: Service unavailable (backend/agent error or Qdrant database unavailable)
+
+    **Response Format**: All successful responses include standardized metadata:
+    - timestamp: ISO 8601 formatted timestamp
+    - version: API version for compatibility tracking
+    - request_id: Optional correlation ID for logging/debugging
+  version: 1.0.0
+  contact:
+    name: Project Support
+    url: https://github.com/yourorg/books
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+    variables:
+      basePath:
+        default: /api
+  - url: http://127.0.0.1:8000
+    description: Localhost IPv4 alternative
+
+tags:
+  - name: Chat
+    description: Chat query and conversation management endpoints
+  - name: Health
+    description: Service health and status endpoints
+
+paths:
+  /api/chat/query:
+    post:
+      tags:
+        - Chat
+      summary: Submit a chat query and receive a RAG-based answer
+      description: |
+        Main chat endpoint that accepts a user query, optional conversation context, and optional selected text.
+        The backend processes the query through the RAG agent, retrieves relevant context from the vector database,
+        and returns a grounded answer with citations.
+
+        **Flow**:
+        1. Validate request payload
+        2. Check conversation_id in backend state (create if not exists)
+        3. Pass query + context to agent.py retrieve_context() function
+        4. Agent generates response using OpenAI API with retrieved context
+        5. Return answer, citations, and updated conversation_id
+
+        **Rate Limiting**: Clients are limited to 10 requests per 60 seconds. Requests exceeding this limit
+        will receive a 429 response.
+      operationId: submitChatQuery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            examples:
+              simpleQuery:
+                summary: Simple query without conversation context
+                value:
+                  query: "What is ROS 2?"
+              conversationQuery:
+                summary: Query as part of ongoing conversation
+                value:
+                  query: "How do I create one?"
+                  conversation_id: "conv_abc123def456"
+              contextualQuery:
+                summary: Query with selected text as additional context
+                value:
+                  query: "Explain this concept"
+                  conversation_id: "conv_abc123def456"
+                  context: "VSLAM is a technique that combines visual perception with simultaneous localization and mapping."
+      responses:
+        '200':
+          description: Successfully processed query and generated answer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+              examples:
+                successfulAnswer:
+                  summary: Successful response with citations
+                  value:
+                    answer: "ROS 2 is the Robot Operating System version 2, a flexible framework for writing robot software. It provides tools and libraries for building robot applications across a wide variety of robotic platforms."
+                    citations:
+                      - module_name: "Module 1: Introduction to Robotics"
+                        chapter_id: "ch1-fundamentals"
+                        source_url: "docs/intro.md"
+                        similarity_score: 0.92
+                      - module_name: "Module 2: ROS Basics"
+                        chapter_id: "ch2-ros-setup"
+                        source_url: "docs/module-2-ros/ch2-ros-setup.md"
+                        similarity_score: 0.88
+                    conversation_id: "conv_abc123def456"
+                    metadata:
+                      retrieved_chunks: 3
+                      total_tokens_used: 245
+                      response_time_ms: 1250
+                      timestamp: "2025-12-23T15:30:45.123Z"
+                noContentAnswer:
+                  summary: Response when content not found in textbook
+                  value:
+                    answer: "I don't have information about that in the textbook. Please try asking about specific topics covered in the Physical AI book, such as ROS, Isaac Sim, or robotics concepts."
+                    citations: []
+                    conversation_id: "conv_abc123def456"
+                    metadata:
+                      retrieved_chunks: 0
+                      total_tokens_used: 89
+                      response_time_ms: 800
+                      timestamp: "2025-12-23T15:30:45.123Z"
+        '400':
+          description: Bad request - validation error in request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingQuery:
+                  summary: Missing required 'query' field
+                  value:
+                    error: "validation_error"
+                    message: "Request body validation failed"
+                    details:
+                      - field: "query"
+                        error: "This field is required"
+                    timestamp: "2025-12-23T15:30:45.123Z"
+                invalidConversationId:
+                  summary: Invalid conversation_id format
+                  value:
+                    error: "validation_error"
+                    message: "Request body validation failed"
+                    details:
+                      - field: "conversation_id"
+                        error: "Must be a valid UUID or alphanumeric string"
+                    timestamp: "2025-12-23T15:30:45.123Z"
+        '414':
+          description: URI too long - query exceeds maximum length
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                queryTooLong:
+                  summary: Query string exceeds 500 characters
+                  value:
+                    error: "query_too_long"
+                    message: "Query must be 500 characters or less. Received 1024 characters."
+                    details:
+                      - field: "query"
+                        error: "Exceeds maximum length of 500 characters"
+                    timestamp: "2025-12-23T15:30:45.123Z"
+        '429':
+          description: Too many requests - rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rateLimited:
+                  summary: Client exceeded rate limit
+                  value:
+                    error: "rate_limit_exceeded"
+                    message: "Too many requests. Maximum 10 requests per 60 seconds allowed."
+                    details:
+                      - field: "rate_limit"
+                        error: "You have exceeded the allowed request rate"
+                    timestamp: "2025-12-23T15:30:45.123Z"
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Number of seconds to wait before retrying
+        '503':
+          description: Service unavailable - backend or agent error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                agentError:
+                  summary: Agent processing error
+                  value:
+                    error: "agent_error"
+                    message: "Failed to process query through RAG agent"
+                    details:
+                      - field: "agent"
+                        error: "Agent returned error: Connection to OpenAI API failed"
+                    timestamp: "2025-12-23T15:30:45.123Z"
+                databaseError:
+                  summary: Vector database error
+                  value:
+                    error: "database_error"
+                    message: "Unable to retrieve context from vector database"
+                    details:
+                      - field: "qdrant"
+                        error: "Connection to Qdrant at localhost:6333 timed out"
+                    timestamp: "2025-12-23T15:30:45.123Z"
+
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: |
+        Returns the health status of the API server. This endpoint requires no authentication
+        and is useful for monitoring service availability and readiness.
+
+        **Use Cases**:
+        - Frontend can check backend availability before enabling chat functionality
+        - Load balancers or monitoring tools can use this for health monitoring
+        - Developers can verify backend is running during setup/debugging
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy and ready to accept requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: Service is healthy
+                  value:
+                    status: "healthy"
+                    timestamp: "2025-12-23T15:30:45.123Z"
+                    version: "1.0.0"
+
+  /api/chat/reset:
+    post:
+      tags:
+        - Chat
+      summary: Reset conversation state
+      description: |
+        Clears the conversation history and message context for a given conversation_id.
+        Subsequent queries after reset are treated as new conversations with no prior context.
+
+        **Use Cases**:
+        - User clicks "New Conversation" or "Reset Chat" button in UI
+        - Frontend clears its message history and calls this endpoint
+        - Backend removes the conversation_id from in-memory state
+
+        **Behavior**:
+        - If conversation_id exists: Clear all messages and reset timestamp
+        - If conversation_id does not exist: Return 404 with helpful error message
+      operationId: resetConversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+            examples:
+              resetConversation:
+                summary: Reset an existing conversation
+                value:
+                  conversation_id: "conv_abc123def456"
+      responses:
+        '200':
+          description: Conversation successfully reset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetResponse'
+              examples:
+                success:
+                  summary: Conversation reset successfully
+                  value:
+                    conversation_id: "conv_abc123def456"
+                    message: "Conversation reset. You can now start a fresh chat."
+                    timestamp: "2025-12-23T15:30:45.123Z"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  summary: Conversation ID does not exist
+                  value:
+                    error: "not_found"
+                    message: "Conversation not found"
+                    details:
+                      - field: "conversation_id"
+                        error: "No conversation with ID 'conv_invalid123' exists in backend state"
+                    timestamp: "2025-12-23T15:30:45.123Z"
+
+components:
+  schemas:
+    ChatRequest:
+      type: object
+      title: Chat Query Request
+      description: |
+        HTTP request payload sent from frontend to backend for processing a user query.
+
+        **Validation Rules**:
+        - query: Required, non-empty string, max 500 characters
+        - conversation_id: Optional, alphanumeric string with underscores/hyphens, max 64 characters
+        - context: Optional, non-empty string, max 2000 characters (for selected text)
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: "The user's question or chat message. Required. Must be between 1-500 characters."
+          example: "What is ROS 2?"
+        conversation_id:
+          type: string
+          minLength: 0
+          maxLength: 64
+          pattern: "^[a-zA-Z0-9_-]*$"
+          description: "Optional identifier for ongoing conversation. If not provided, backend creates a new one. Used to maintain context across multiple turns."
+          example: "conv_abc123def456"
+          nullable: true
+        context:
+          type: string
+          minLength: 0
+          maxLength: 2000
+          description: "Optional additional context from selected text on the page. Helps the agent provide more focused answers. Max 2000 characters."
+          example: "VSLAM is a technique that combines visual perception with simultaneous localization and mapping."
+          nullable: true
+
+    ChatResponse:
+      type: object
+      title: Chat Query Response
+      description: |
+        HTTP response payload returned from backend after processing a query.
+        Contains the RAG-generated answer, source citations, and conversation metadata.
+      required:
+        - answer
+        - citations
+        - conversation_id
+        - metadata
+      properties:
+        answer:
+          type: string
+          description: "The RAG-based answer generated by the agent. May indicate 'no content found' if query is outside textbook scope."
+          example: "ROS 2 is the Robot Operating System version 2, a flexible framework for writing robot software."
+        citations:
+          type: array
+          description: "Array of source citations that grounded the answer. Empty array if no relevant content found."
+          items:
+            $ref: '#/components/schemas/Citation'
+        conversation_id:
+          type: string
+          description: "Unique identifier for this conversation. If not provided in request, backend generates a new one."
+          example: "conv_abc123def456"
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    Citation:
+      type: object
+      title: Citation
+      description: |
+        Source reference for an answer, indicating where the information was retrieved from.
+        Helps readers understand the grounding and location of information in the textbook.
+      required:
+        - module_name
+        - chapter_id
+        - source_url
+        - similarity_score
+      properties:
+        module_name:
+          type: string
+          description: "Human-readable module name (e.g., 'Module 1: Introduction to Robotics')"
+          example: "Module 1: Introduction to Robotics"
+        chapter_id:
+          type: string
+          description: "Unique chapter identifier for linking (e.g., 'ch1-fundamentals')"
+          example: "ch1-fundamentals"
+        source_url:
+          type: string
+          format: uri
+          description: "Relative path to the markdown file in Docusaurus (e.g., 'docs/intro.md' or 'docs/module-2-ros/ch2-setup.md')"
+          example: "docs/intro.md"
+        similarity_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: "Semantic similarity score (0.0 to 1.0) indicating relevance of this citation to the query."
+          example: 0.92
+
+    ResponseMetadata:
+      type: object
+      title: Response Metadata
+      description: |
+        Metadata about the response for monitoring, debugging, and analytics purposes.
+      required:
+        - timestamp
+      properties:
+        retrieved_chunks:
+          type: integer
+          minimum: 0
+          description: "Number of text chunks retrieved from vector database for generating this answer."
+          example: 3
+        total_tokens_used:
+          type: integer
+          minimum: 0
+          description: "Approximate total tokens used in the OpenAI API call (input + output)."
+          example: 245
+        response_time_ms:
+          type: integer
+          minimum: 0
+          description: "Time taken to process the query in milliseconds."
+          example: 1250
+        timestamp:
+          type: string
+          format: date-time
+          description: "ISO 8601 formatted timestamp when response was generated."
+          example: "2025-12-23T15:30:45.123Z"
+        version:
+          type: string
+          description: "API version for compatibility tracking."
+          example: "1.0.0"
+
+    HealthResponse:
+      type: object
+      title: Health Status Response
+      description: |
+        Response from the health check endpoint indicating service status.
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - degraded
+            - unhealthy
+          description: "Health status of the service. 'healthy' means service is fully operational and ready for requests."
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          description: "ISO 8601 formatted timestamp when health check was performed."
+          example: "2025-12-23T15:30:45.123Z"
+        version:
+          type: string
+          description: "API version information."
+          example: "1.0.0"
+
+    ResetRequest:
+      type: object
+      title: Reset Conversation Request
+      description: |
+        Request payload for resetting a conversation.
+      required:
+        - conversation_id
+      properties:
+        conversation_id:
+          type: string
+          minLength: 1
+          maxLength: 64
+          pattern: "^[a-zA-Z0-9_-]+$"
+          description: "The conversation_id to reset. Must match an existing conversation in backend state."
+          example: "conv_abc123def456"
+
+    ResetResponse:
+      type: object
+      title: Reset Conversation Response
+      description: |
+        Response confirming successful conversation reset.
+      required:
+        - conversation_id
+        - message
+        - timestamp
+      properties:
+        conversation_id:
+          type: string
+          description: "The conversation_id that was reset."
+          example: "conv_abc123def456"
+        message:
+          type: string
+          description: "Confirmation message for the user."
+          example: "Conversation reset. You can now start a fresh chat."
+        timestamp:
+          type: string
+          format: date-time
+          description: "ISO 8601 formatted timestamp when reset was performed."
+          example: "2025-12-23T15:30:45.123Z"
+
+    ErrorResponse:
+      type: object
+      title: Error Response
+      description: |
+        Standard error response format returned for all error conditions.
+        Frontend should display the 'message' field to users.
+        'details' array provides technical information for logging/debugging.
+      required:
+        - error
+        - message
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: "Error code identifier (e.g., 'validation_error', 'rate_limit_exceeded', 'not_found')"
+          example: "validation_error"
+        message:
+          type: string
+          description: "Human-readable error message suitable for displaying to users."
+          example: "Request body validation failed"
+        details:
+          type: array
+          description: "Array of detailed error information for debugging. May be empty for simple errors."
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: "Field name where error occurred (if applicable)."
+                example: "query"
+              error:
+                type: string
+                description: "Specific error description for this field."
+                example: "This field is required"
+        timestamp:
+          type: string
+          format: date-time
+          description: "ISO 8601 formatted timestamp when error occurred."
+          example: "2025-12-23T15:30:45.123Z"
+
+  responses:
+    BadRequest:
+      description: Bad request - validation error in request payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    RateLimitExceeded:
+      description: Too many requests - rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ServiceUnavailable:
+      description: Service unavailable - backend or agent error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  securitySchemes: {}
+
+security: []

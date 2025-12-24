@@ -1,0 +1,332 @@
+# Function Contracts: Retrieval Pipeline Testing
+# Feature: 008-retrieval-pipeline-testing
+# File: backend/retrieve.py
+
+# All functions for retrieval validation tool
+# Type annotations use Python 3.10+ syntax
+
+---
+
+# ============================================================================
+# Core Retrieval Functions
+# ============================================================================
+
+query_qdrant:
+  description: Generate query embedding and search Qdrant for similar chunks
+  parameters:
+    - name: query_text
+      type: str
+      required: true
+      description: The search query string
+    - name: top_k
+      type: int
+      required: false
+      default: 5
+      description: Number of top results to return
+    - name: threshold
+      type: float
+      required: false
+      default: 0.70
+      description: Minimum similarity score filter
+  returns:
+    type: List[QueryResult]
+    description: List of retrieved chunks with similarity scores, sorted by score descending
+  raises:
+    - ConnectionError: If Qdrant is unreachable
+    - ValueError: If query_text is empty or invalid
+    - Exception: If Cohere embedding generation fails
+  example: |
+    results = query_qdrant("What is ROS 2?", top_k=5, threshold=0.70)
+    # Returns: [QueryResult(...), QueryResult(...), ...]
+
+embed_query:
+  description: Generate Cohere embedding for query text
+  parameters:
+    - name: query_text
+      type: str
+      required: true
+      description: Query string to embed
+  returns:
+    type: List[float]
+    description: 1024-dimensional embedding vector
+  raises:
+    - ValueError: If query_text is empty
+    - Exception: If Cohere API call fails
+  notes:
+    - Uses model="embed-english-v3.0"
+    - Uses input_type="search_query" (different from document ingestion)
+  example: |
+    embedding = embed_query("What is ROS 2?")
+    # Returns: [0.123, -0.456, ..., 0.789]  # 1024 dimensions
+
+# ============================================================================
+# Validation Functions (User Story 1)
+# ============================================================================
+
+run_validation_queries:
+  description: Execute all test queries and validate results
+  parameters:
+    - name: test_queries
+      type: List[TestQuery]
+      required: true
+      description: List of queries with expected results
+  returns:
+    type: List[QueryValidationResult]
+    description: Validation result for each query
+  raises:
+    - Exception: If Qdrant or Cohere API fails
+  notes:
+    - Logs progress for each query
+    - Calculates pass/fail based on similarity threshold and module match
+  example: |
+    results = run_validation_queries(TEST_QUERIES)
+    # Returns: [QueryValidationResult(...), ...]
+
+validate_query_result:
+  description: Check if query results meet expected criteria
+  parameters:
+    - name: query
+      type: TestQuery
+      required: true
+      description: The test query with expectations
+    - name: results
+      type: List[QueryResult]
+      required: true
+      description: Retrieved chunks from Qdrant
+  returns:
+    type: QueryValidationResult
+    description: Validation outcome with pass/fail status
+  raises: []
+  notes:
+    - Checks if best_similarity >= min_similarity
+    - Checks if expected_module appears in top results
+  example: |
+    validation = validate_query_result(test_query, qdrant_results)
+    # Returns: QueryValidationResult(passed=True, ...)
+
+# ============================================================================
+# Coverage Functions (User Story 2)
+# ============================================================================
+
+analyze_coverage:
+  description: Compare Qdrant contents against sitemap to identify gaps
+  parameters:
+    - name: sitemap_url
+      type: str
+      required: true
+      description: URL of sitemap.xml (DOCUSAURUS_BASE_URL/sitemap.xml)
+  returns:
+    type: CoverageReport
+    description: Coverage analysis with missing/extra URLs
+  raises:
+    - requests.RequestException: If sitemap fetch fails
+    - ConnectionError: If Qdrant is unreachable
+  notes:
+    - Fetches sitemap.xml and extracts all /docs/* URLs
+    - Queries Qdrant for distinct source_url values
+    - Performs set operations to find gaps
+  example: |
+    coverage = analyze_coverage("https://example.com/sitemap.xml")
+    # Returns: CoverageReport(coverage_percentage=100.0, ...)
+
+get_indexed_urls:
+  description: Query Qdrant for all unique source URLs
+  parameters:
+    - name: qdrant_client
+      type: QdrantClient
+      required: true
+      description: Initialized Qdrant client
+    - name: collection_name
+      type: str
+      required: true
+      description: Collection name (default "rag_embedding")
+  returns:
+    type: Set[str]
+    description: Set of unique source URLs in Qdrant
+  raises:
+    - ConnectionError: If Qdrant is unreachable
+  notes:
+    - Uses scroll API to iterate all points
+    - Extracts payload.source_url from each point
+    - Returns deduplicated set
+  example: |
+    urls = get_indexed_urls(client, "rag_embedding")
+    # Returns: {"https://example.com/docs/intro", ...}
+
+# ============================================================================
+# Quality Metrics Functions (User Story 3)
+# ============================================================================
+
+analyze_quality_metrics:
+  description: Calculate statistical metrics on embeddings and metadata
+  parameters:
+    - name: qdrant_client
+      type: QdrantClient
+      required: true
+      description: Initialized Qdrant client
+    - name: collection_name
+      type: str
+      required: true
+      description: Collection name
+    - name: query_results
+      type: List[QueryValidationResult]
+      required: true
+      description: Results from validation queries (for similarity stats)
+  returns:
+    type: QualityMetrics
+    description: Quality analysis with token distribution, metadata completeness, avg similarity
+  raises:
+    - ConnectionError: If Qdrant is unreachable
+  notes:
+    - Scrolls through all points to collect metadata
+    - Calculates token_count distribution (min/max/avg/median)
+    - Checks metadata completeness (all required fields present)
+    - Aggregates similarity scores from query_results
+  example: |
+    metrics = analyze_quality_metrics(client, "rag_embedding", query_results)
+    # Returns: QualityMetrics(total_chunks=13, metadata_completeness_rate=100.0, ...)
+
+check_metadata_completeness:
+  description: Verify all required metadata fields are present in a chunk
+  parameters:
+    - name: payload
+      type: Dict
+      required: true
+      description: Qdrant point payload (metadata)
+  returns:
+    type: bool
+    description: True if all required fields present, False otherwise
+  raises: []
+  notes:
+    - Required fields: source_url, chapter_id, module_name, heading_hierarchy, token_count, chunk_index
+  example: |
+    is_complete = check_metadata_completeness(point.payload)
+    # Returns: True or False
+
+calculate_token_distribution:
+  description: Calculate min/max/avg/median token counts across chunks
+  parameters:
+    - name: token_counts
+      type: List[int]
+      required: true
+      description: List of token_count values from all chunks
+  returns:
+    type: Dict[str, float]
+    description: Distribution stats (min, max, avg, median)
+  raises:
+    - ValueError: If token_counts is empty
+  example: |
+    dist = calculate_token_distribution([500, 750, 1000, 650])
+    # Returns: {"min": 500, "max": 1000, "avg": 725.0, "median": 700.0}
+
+# ============================================================================
+# Reporting Functions
+# ============================================================================
+
+generate_validation_report:
+  description: Aggregate all results into final validation report
+  parameters:
+    - name: query_results
+      type: List[QueryValidationResult]
+      required: true
+      description: Results from all test queries
+    - name: coverage_report
+      type: CoverageReport
+      required: true
+      description: Coverage analysis
+    - name: quality_metrics
+      type: QualityMetrics
+      required: true
+      description: Quality statistics
+    - name: duration_seconds
+      type: float
+      required: true
+      description: Total execution time
+  returns:
+    type: ValidationReport
+    description: Complete validation summary
+  raises: []
+  notes:
+    - Calculates pass_rate from query_results
+    - Adds timestamp
+  example: |
+    report = generate_validation_report(
+        query_results, coverage_report, quality_metrics, 45.2
+    )
+    # Returns: ValidationReport(pass_rate=93.3, ...)
+
+print_validation_report:
+  description: Print formatted validation report to console
+  parameters:
+    - name: report
+      type: ValidationReport
+      required: true
+      description: Complete validation report
+  returns:
+    type: None
+    description: Prints to stdout via loguru
+  raises: []
+  notes:
+    - Uses loguru for structured logging
+    - Color-coded pass/fail indicators
+    - Summary table with key metrics
+  example: |
+    print_validation_report(report)
+    # Prints formatted report to console
+
+# ============================================================================
+# Main Orchestration
+# ============================================================================
+
+main:
+  description: Orchestrate full validation workflow
+  parameters: []
+  returns:
+    type: None
+    description: Exits with code 0 on success, 1 on failure
+  raises:
+    - SystemExit: If validation fails or errors occur
+  notes:
+    - Loads environment variables
+    - Initializes Qdrant client
+    - Runs all three user stories: validation queries, coverage, quality
+    - Prints final report
+    - Exits with appropriate code
+  workflow: |
+    1. Load .env configuration
+    2. Validate required env vars (COHERE_API_KEY, QDRANT_URL, etc.)
+    3. Initialize Qdrant client
+    4. Run validation queries (User Story 1)
+    5. Analyze coverage (User Story 2)
+    6. Analyze quality metrics (User Story 3)
+    7. Generate and print validation report
+    8. Exit with code 0 if pass_rate >= 90%, else exit 1
+  example: |
+    if __name__ == "__main__":
+        main()
+
+# ============================================================================
+# Configuration Constants
+# ============================================================================
+
+TEST_QUERIES:
+  description: Hardcoded list of validation queries
+  type: List[TestQuery]
+  notes:
+    - Manually curated to cover all major modules
+    - 10-15 queries total
+    - Each query includes expected_module and min_similarity
+  example: |
+    TEST_QUERIES = [
+        {
+            "query_text": "What is ROS 2?",
+            "expected_module": "Module 1 Ros2",
+            "min_similarity": 0.70
+        },
+        # ... more queries
+    ]
+
+REQUIRED_METADATA_FIELDS:
+  description: List of required metadata fields for completeness check
+  type: List[str]
+  value: ["source_url", "chapter_id", "module_name", "heading_hierarchy", "token_count", "chunk_index"]
