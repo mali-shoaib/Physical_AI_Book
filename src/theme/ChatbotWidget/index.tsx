@@ -6,7 +6,9 @@ import styles from './styles.module.css';
 
 export default function ChatbotWidget(): JSX.Element | null {
   const { siteConfig } = useDocusaurusContext();
-  const API_BASE_URL = (siteConfig.customFields?.chatbotApiUrl as string) || 'https://shoaibali-s-srag.hf.space';
+  // Remove trailing slash to prevent double-slash in API URLs
+  const rawApiUrl = (siteConfig.customFields?.chatbotApiUrl as string) || 'https://shoaibali-s-srag.hf.space';
+  const API_BASE_URL = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
   const [mounted, setMounted] = useState(false);
   const [state, setState] = useState<ChatWidgetState>({
     messages: [],
