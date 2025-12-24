@@ -25,6 +25,12 @@ export default function ChatbotWidget(): JSX.Element | null {
     console.log('🤖 ChatbotWidget initialized');
     console.log('📡 Backend API URL:', API_BASE_URL);
     console.log('🌍 Environment:', process.env.NODE_ENV);
+    console.log('🔧 CustomFields:', siteConfig.customFields);
+
+    // Alert user if using localhost (development mode)
+    if (API_BASE_URL.includes('localhost')) {
+      console.warn('⚠️ WARNING: Using localhost backend URL. This will not work in production!');
+    }
   }, []);
 
   // Auto-scroll to bottom when messages change
@@ -69,11 +75,16 @@ export default function ChatbotWidget(): JSX.Element | null {
         conversation_id: state.conversationId,
       };
 
+      console.log('🚀 Sending request to:', `${API_BASE_URL}/api/chat/query`);
+      console.log('📦 Payload:', requestPayload);
+
       const response = await axios.post<ChatResponse>(
         `${API_BASE_URL}/api/chat/query`,
         requestPayload,
         { timeout: 30000 }
       );
+
+      console.log('✅ Response received:', response.data);
 
       const assistantMessage: ChatMessage = {
         role: 'assistant',
@@ -92,13 +103,22 @@ export default function ChatbotWidget(): JSX.Element | null {
       // Save conversation ID
       sessionStorage.setItem('chatbot_conversation_id', response.data.conversation_id);
     } catch (error) {
+      console.error('❌ Chat request failed:', error);
+
       let errorMessage = 'Failed to get response. Please try again.';
 
       if (axios.isAxiosError(error)) {
+        console.error('📍 Request URL was:', error.config?.url);
+        console.error('📍 Error details:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
+
         if (error.response) {
-          errorMessage = error.response.data?.detail || errorMessage;
+          errorMessage = error.response.data?.detail || `Error ${error.response.status}: ${error.response.statusText}`;
         } else if (error.request) {
-          errorMessage = 'Cannot connect to chatbot service. Is the backend running?';
+          errorMessage = 'Cannot connect to chatbot service. Backend URL: ' + API_BASE_URL;
         }
       }
 
