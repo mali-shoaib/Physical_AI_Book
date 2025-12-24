@@ -1,18 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import type { ChatMessage, ChatRequest, ChatResponse, ChatWidgetState } from './types';
 import styles from './styles.module.css';
 
-// Backend API URL - configurable via environment variable
-// For local development: http://localhost:8000
-// For production: set REACT_APP_CHATBOT_API_URL or CHATBOT_API_URL in Vercel
-const API_BASE_URL =
-  process.env.REACT_APP_CHATBOT_API_URL ||
-  process.env.CHATBOT_API_URL ||
-  (typeof window !== 'undefined' && (window as any).CHATBOT_API_URL) ||
-  'http://localhost:8000';
-
 export default function ChatbotWidget(): JSX.Element | null {
+  const { siteConfig } = useDocusaurusContext();
+  const API_BASE_URL = (siteConfig.customFields?.chatbotApiUrl as string) || 'http://localhost:8000';
   const [mounted, setMounted] = useState(false);
   const [state, setState] = useState<ChatWidgetState>({
     messages: [],

@@ -13,6 +13,11 @@ const config = {
   // For Vercel deployment, use root path
   baseUrl: '/',
 
+  // Custom fields for chatbot configuration
+  customFields: {
+    chatbotApiUrl: process.env.CHATBOT_API_URL || 'https://shoaibali-s-srag.hf.space',
+  },
+
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'your-org', // Usually your GitHub org/user name.
