@@ -3,9 +3,11 @@ import axios from 'axios';
 import type { ChatMessage, ChatRequest, ChatResponse, ChatWidgetState } from './types';
 import styles from './styles.module.css';
 
-const API_BASE_URL = 'http://localhost:8000';
+// Backend API URL - update this when backend is deployed
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 export default function ChatbotWidget(): JSX.Element {
+  console.log('🤖 ChatbotWidget loaded - API URL:', API_BASE_URL);
   const [state, setState] = useState<ChatWidgetState>({
     messages: [],
     isOpen: false,
