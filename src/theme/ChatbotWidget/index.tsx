@@ -6,7 +6,7 @@ import styles from './styles.module.css';
 
 export default function ChatbotWidget(): JSX.Element | null {
   const { siteConfig } = useDocusaurusContext();
-  const API_BASE_URL = (siteConfig.customFields?.chatbotApiUrl as string) || 'http://localhost:8000';
+  const API_BASE_URL = (siteConfig.customFields?.chatbotApiUrl as string) || 'https://shoaibali-s-srag.hf.space';
   const [mounted, setMounted] = useState(false);
   const [state, setState] = useState<ChatWidgetState>({
     messages: [],
