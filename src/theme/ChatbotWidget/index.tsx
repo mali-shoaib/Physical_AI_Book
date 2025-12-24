@@ -3,11 +3,17 @@ import axios from 'axios';
 import type { ChatMessage, ChatRequest, ChatResponse, ChatWidgetState } from './types';
 import styles from './styles.module.css';
 
-// Backend API URL - update this when backend is deployed
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+// Backend API URL - configurable via environment variable
+// For local development: http://localhost:8000
+// For production: set REACT_APP_CHATBOT_API_URL or CHATBOT_API_URL in Vercel
+const API_BASE_URL =
+  process.env.REACT_APP_CHATBOT_API_URL ||
+  process.env.CHATBOT_API_URL ||
+  (typeof window !== 'undefined' && (window as any).CHATBOT_API_URL) ||
+  'http://localhost:8000';
 
-export default function ChatbotWidget(): JSX.Element {
-  console.log('🤖 ChatbotWidget loaded - API URL:', API_BASE_URL);
+export default function ChatbotWidget(): JSX.Element | null {
+  const [mounted, setMounted] = useState(false);
   const [state, setState] = useState<ChatWidgetState>({
     messages: [],
     isOpen: false,
@@ -19,18 +25,30 @@ export default function ChatbotWidget(): JSX.Element {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Client-side only rendering
+  useEffect(() => {
+    setMounted(true);
+    console.log('🤖 ChatbotWidget initialized');
+    console.log('📡 Backend API URL:', API_BASE_URL);
+    console.log('🌍 Environment:', process.env.NODE_ENV);
+  }, []);
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [state.messages]);
+    if (mounted) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [state.messages, mounted]);
 
   // Load conversation ID from session storage
   useEffect(() => {
-    const savedConvId = sessionStorage.getItem('chatbot_conversation_id');
-    if (savedConvId) {
-      setState((prev) => ({ ...prev, conversationId: savedConvId }));
+    if (mounted) {
+      const savedConvId = sessionStorage.getItem('chatbot_conversation_id');
+      if (savedConvId) {
+        setState((prev) => ({ ...prev, conversationId: savedConvId }));
+      }
     }
-  }, []);
+  }, [mounted]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +120,50 @@ export default function ChatbotWidget(): JSX.Element {
     setState((prev) => ({ ...prev, isOpen: !prev.isOpen }));
   };
 
+  const handleReset = async () => {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      'Are you sure you want to reset the conversation? This will clear all messages and start fresh.'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      // Call reset endpoint if conversation exists
+      if (state.conversationId) {
+        await axios.post(`${API_BASE_URL}/api/chat/reset/${state.conversationId}`);
+      }
+
+      // Clear local state
+      setState((prev) => ({
+        ...prev,
+        messages: [],
+        conversationId: null,
+        error: null,
+      }));
+
+      // Clear session storage
+      sessionStorage.removeItem('chatbot_conversation_id');
+
+      console.log('🔄 Conversation reset successfully');
+    } catch (error) {
+      console.error('Failed to reset conversation:', error);
+      // Still clear local state even if API call fails
+      setState((prev) => ({
+        ...prev,
+        messages: [],
+        conversationId: null,
+        error: null,
+      }));
+      sessionStorage.removeItem('chatbot_conversation_id');
+    }
+  };
+
+  // Don't render until client-side
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <div className={styles.chatbotContainer}>
       {/* Toggle Button */}
@@ -118,8 +180,20 @@ export default function ChatbotWidget(): JSX.Element {
         <div className={styles.chatWidget}>
           {/* Header */}
           <div className={styles.chatHeader}>
-            <h3>Textbook Assistant</h3>
-            <span className={styles.statusDot}></span>
+            <div className={styles.headerLeft}>
+              <h3>Textbook Assistant</h3>
+              <span className={styles.statusDot}></span>
+            </div>
+            {state.messages.length > 0 && (
+              <button
+                className={styles.resetButton}
+                onClick={handleReset}
+                title="Reset conversation"
+                aria-label="Reset conversation"
+              >
+                🔄
+              </button>
+            )}
           </div>
 
           {/* Messages */}

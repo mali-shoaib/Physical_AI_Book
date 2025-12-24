@@ -103,6 +103,9 @@ class ErrorResponse(BaseModel):
 # In-memory conversation storage (session_id -> conversation_history)
 conversations: Dict[str, Dict] = {}
 
+# Configuration for conversation history limits
+MAX_HISTORY_MESSAGES = 50  # Maximum number of messages to keep in history
+
 
 def get_conversation(conversation_id: str) -> Optional[Dict]:
     """Retrieve conversation state by ID"""
@@ -126,7 +129,13 @@ def create_conversation(conversation_id: str = None) -> str:
 
 
 def add_message_to_conversation(conversation_id: str, role: str, content: str) -> None:
-    """Add message to conversation history"""
+    """
+    Add message to conversation history with sliding window.
+
+    Implements sliding window to limit history size to MAX_HISTORY_MESSAGES.
+    When limit is exceeded, oldest messages are removed to maintain context
+    while preventing token overflow.
+    """
     if conversation_id in conversations:
         conversations[conversation_id]["conversation_history"].append({
             "role": role,
@@ -134,6 +143,14 @@ def add_message_to_conversation(conversation_id: str, role: str, content: str) -
             "timestamp": datetime.now()
         })
         conversations[conversation_id]["last_updated"] = datetime.now()
+
+        # Implement sliding window: keep only the last MAX_HISTORY_MESSAGES messages
+        history = conversations[conversation_id]["conversation_history"]
+        if len(history) > MAX_HISTORY_MESSAGES:
+            # Remove oldest messages to stay within limit
+            removed_count = len(history) - MAX_HISTORY_MESSAGES
+            conversations[conversation_id]["conversation_history"] = history[-MAX_HISTORY_MESSAGES:]
+            logger.debug(f"Sliding window applied: removed {removed_count} oldest messages from conversation {conversation_id}")
 
 
 # ============================================================================
@@ -147,16 +164,34 @@ app = FastAPI(
 )
 
 # Configure CORS middleware
+# Allow production and local development origins
+allowed_origins = [
+    # Production
+    "https://physical-ai-robotics-textbook-xi.vercel.app",
+    # Local development
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:3002",
+    "http://127.0.0.1:3002",
+    "http://localhost:3005",
+    "http://127.0.0.1:3005",
+    "http://localhost:3006",
+    "http://127.0.0.1:3006",
+    "http://localhost:3007",
+    "http://127.0.0.1:3007"
+]
+
+# Add environment-specific origins
+if os.getenv("ALLOWED_ORIGINS"):
+    additional_origins = os.getenv("ALLOWED_ORIGINS").split(",")
+    allowed_origins.extend(additional_origins)
+    logger.info(f"Added {len(additional_origins)} additional CORS origins from environment")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-        "http://localhost:3002",
-        "http://127.0.0.1:3002"
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"]
@@ -182,12 +217,6 @@ async def health_check():
 # ============================================================================
 # Chat Query Endpoint
 # ============================================================================
-
-@app.options("/api/chat/query")
-async def chat_query_options():
-    """Handle CORS preflight request"""
-    return {"status": "ok"}
-
 
 @app.post("/api/chat/query", response_model=ChatResponse)
 async def chat_query(request: ChatRequest):

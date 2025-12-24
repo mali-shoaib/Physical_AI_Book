@@ -62,12 +62,42 @@
   letter-spacing: 0.3px;
 }
 
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .statusDot {
   width: 8px;
   height: 8px;
   background: #4ade80;
   border-radius: 50%;
   animation: pulse 2s infinite;
+}
+
+.resetButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.resetButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(180deg);
+}
+
+.resetButton:active {
+  transform: rotate(180deg) scale(0.95);
 }
 
 @keyframes pulse {
