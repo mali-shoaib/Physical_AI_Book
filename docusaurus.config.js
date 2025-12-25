@@ -15,7 +15,7 @@ const config = {
 
   // Custom fields for chatbot configuration
   customFields: {
-    chatbotApiUrl: process.env.CHATBOT_API_URL || 'https://shoaibali-s-srag.hf.space',
+    chatbotApiUrl: process.env.DOCUSAURUS_CHATBOT_API_URL || 'https://shoaibali-s-srag.hf.space',
   },
 
   // GitHub pages deployment config.
