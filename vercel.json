@@ -1,18 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "handle": "filesystem"
-    }
-  ],
-  "outputDirectory": "build"
+  "buildCommand": "npm run build",
+  "outputDirectory": "build",
+  "env": {
+    "DOCUSAURUS_CHATBOT_API_URL": "https://shoaibali-s-srag.hf.space"
+  }
 }
